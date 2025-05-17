@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MapPin, Pill, Truck, Check, Edit2 } from "lucide-react";
+import { MapPin, Pill, Truck, Check, Edit2, Send } from "lucide-react";
 
 const SummaryScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -116,7 +116,7 @@ const SummaryScreen: React.FC = () => {
                   </Button>
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
-                  <Drone className="h-5 w-5" />
+                  <Send className="h-5 w-5" />
                   <span>Drone Delivery (Within 1 hour)</span>
                 </div>
               </CardContent>
@@ -158,8 +158,5 @@ const SummaryScreen: React.FC = () => {
     </div>
   );
 };
-
-// Import the Drone icon since it's not in the main import above
-import { Drone } from "lucide-react";
 
 export default SummaryScreen;

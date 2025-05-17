@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { motion } from "framer-motion";
-import { Car, Drone } from "lucide-react";
+import { Car, Send } from "lucide-react";
 
 type DeliveryMethod = "car" | "drone" | null;
 
@@ -66,7 +66,7 @@ const DeliveryMethodScreen: React.FC = () => {
               onClick={() => handleSelectMethod("drone")}
             >
               <CardContent className="p-6 flex flex-col items-center">
-                <Drone className="h-16 w-16 text-primary mb-2" />
+                <Send className="h-16 w-16 text-primary mb-2" />
                 <h3 className="text-xl font-semibold">Drone Delivery</h3>
                 <p className="text-lg font-medium">Within 1 hour</p>
                 <p className="text-gray-600 text-center mt-2">
