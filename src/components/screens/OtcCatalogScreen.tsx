@@ -11,10 +11,90 @@ import {
 } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Plus, Minus, ShoppingCart, Home, Pill, PillIcon, Eye, Thermometer, Droplets, Bottle, Spray, Tablets, Vitamin } from "lucide-react";
+import { Plus, Minus, ShoppingCart, Home, Pill, PillIcon, Eye, Thermometer, Droplets } from "lucide-react";
 import { toast } from "sonner";
 import BackButton from "@/components/BackButton";
 import Logo from "@/components/Logo";
+
+// Custom icons for items that don't have direct Lucide equivalents
+const BottleIcon = () => (
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M9 2h6v3H9z" />
+    <path d="M19 6H5a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2z" />
+    <path d="M12 12v6" />
+    <path d="M9 15h6" />
+  </svg>
+);
+
+const SprayIcon = () => (
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M4 4h2v4H4z" />
+    <path d="M8 3h4v6H8z" />
+    <path d="M14 8v13a1 1 0 001 1h4a1 1 0 001-1V8h-6z" />
+    <path d="M17 3v5" />
+    <path d="M21 8l-2-2" />
+    <path d="M21 3l-3 3" />
+  </svg>
+);
+
+const TabletsIcon = () => (
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect x="3" y="8" width="6" height="12" rx="3" />
+    <rect x="15" y="4" width="6" height="12" rx="3" />
+  </svg>
+);
+
+const VitaminIcon = () => (
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="7" />
+    <path d="M12 9v6" />
+    <path d="M15 12h-6" />
+    <path d="M12 5V3" />
+    <path d="M19 12h2" />
+    <path d="M12 19v2" />
+    <path d="M5 12H3" />
+  </svg>
+);
 
 interface ProductSize {
   label: string;
@@ -78,7 +158,7 @@ const OtcCatalogScreen: React.FC = () => {
       id: 4,
       name: "Nasal Spray",
       description: "For congestion and sinus relief",
-      icon: <Spray className="h-12 w-12" />,
+      icon: <SprayIcon className="h-12 w-12" />,
       color: "#E0F0FF",
       sizes: [
         { label: "15ml", price: 5.49 },
@@ -90,7 +170,7 @@ const OtcCatalogScreen: React.FC = () => {
       id: 5,
       name: "Cough Syrup",
       description: "For dry and tickly cough relief",
-      icon: <Bottle className="h-12 w-12" />,
+      icon: <BottleIcon className="h-12 w-12" />,
       color: "#F5E6FF",
       sizes: [
         { label: "100ml", price: 6.99 },
@@ -102,7 +182,7 @@ const OtcCatalogScreen: React.FC = () => {
       id: 6,
       name: "Throat Lozenges",
       description: "Soothing relief for sore throats",
-      icon: <Tablets className="h-12 w-12" />,
+      icon: <TabletsIcon className="h-12 w-12" />,
       color: "#FFF4E0",
       sizes: [
         { label: "12 lozenges", price: 3.49 },
@@ -126,7 +206,7 @@ const OtcCatalogScreen: React.FC = () => {
       id: 8,
       name: "Digestive Enzyme Tablets",
       description: "Aids digestion and reduces bloating",
-      icon: <Tablets className="h-12 w-12" />,
+      icon: <TabletsIcon className="h-12 w-12" />,
       color: "#FFF0E0",
       sizes: [
         { label: "20 tablets", price: 8.99 },
@@ -138,7 +218,7 @@ const OtcCatalogScreen: React.FC = () => {
       id: 9,
       name: "Vitamin C 1000mg",
       description: "Immune system support",
-      icon: <Vitamin className="h-12 w-12" />,
+      icon: <VitaminIcon className="h-12 w-12" />,
       color: "#FFFFE0",
       sizes: [
         { label: "30 tablets", price: 6.49 },
@@ -162,7 +242,7 @@ const OtcCatalogScreen: React.FC = () => {
       id: 11,
       name: "Antacid Tablets",
       description: "Relieves heartburn and indigestion",
-      icon: <Tablets className="h-12 w-12" />,
+      icon: <TabletsIcon className="h-12 w-12" />,
       color: "#F0F0F0",
       sizes: [
         { label: "12 tablets", price: 4.29 },
