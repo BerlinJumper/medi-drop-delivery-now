@@ -171,7 +171,7 @@ const AddressScreen: React.FC = () => {
                   placeholder="Start typing your address in Germany..."
                   options={{
                     types: ['address'],
-                    componentRestrictions: { country: 'DE' }
+                    // componentRestrictions: { country: 'FR' }
                   }}
                 />
                 <Button
