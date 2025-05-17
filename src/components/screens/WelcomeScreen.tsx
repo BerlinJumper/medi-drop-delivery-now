@@ -5,6 +5,7 @@ import WaveBackground from "@/components/WaveBackground";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Logo from "@/components/Logo";
+import { Settings } from "lucide-react";
 
 const WelcomeScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -16,6 +17,17 @@ const WelcomeScreen: React.FC = () => {
       transition={{ duration: 0.5 }}
       className="min-h-screen flex flex-col items-center justify-center px-4 relative"
     >
+      <div className="absolute top-4 right-4">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => navigate("/settings")}
+          className="text-primary hover:bg-accent/30"
+        >
+          <Settings className="h-6 w-6" />
+        </Button>
+      </div>
+      
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}

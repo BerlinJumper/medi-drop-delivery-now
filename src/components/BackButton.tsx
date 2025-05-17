@@ -24,7 +24,7 @@ const BackButton: React.FC<BackButtonProps> = ({ previousRoute }) => {
       variant="ghost"
       size="sm"
       onClick={handleGoBack}
-      className="absolute top-4 left-4 p-2"
+      className="absolute top-4 left-4 p-2 hover:bg-accent/20 transition-colors"
     >
       <ArrowLeft className="h-5 w-5 mr-1" />
       <span>Back</span>

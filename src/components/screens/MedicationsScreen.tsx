@@ -13,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { toast } from "sonner";
 import BackButton from "@/components/BackButton";
 import Logo from "@/components/Logo";
 
@@ -21,13 +22,14 @@ interface Medication {
   name: string;
   dosage: string;
   description: string;
-  info: string;
   packaging: string;
-  doctor?: string;
+  selected: boolean;
 }
 
 const MedicationsScreen: React.FC = () => {
   const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
+  
   const [medications, setMedications] = useState<Medication[]>([
     {
       id: 1,
@@ -35,8 +37,7 @@ const MedicationsScreen: React.FC = () => {
       dosage: "10mg",
       description: "For blood pressure management",
       packaging: "Pack of 30 tablets",
-      doctor: "Dr. Sarah Johnson",
-      info: "Lisinopril is an ACE inhibitor that widens blood vessels to lower blood pressure and improve blood flow.",
+      selected: true,
     },
     {
       id: 2,
@@ -44,8 +45,7 @@ const MedicationsScreen: React.FC = () => {
       dosage: "20mg",
       description: "For cholesterol management",
       packaging: "Pack of 28 tablets",
-      doctor: "Dr. Michael Chen",
-      info: "Atorvastatin is a statin that reduces the production of cholesterol in the liver to lower LDL levels.",
+      selected: true,
     },
     {
       id: 3,
@@ -53,27 +53,26 @@ const MedicationsScreen: React.FC = () => {
       dosage: "500mg",
       description: "For blood sugar control",
       packaging: "Pack of 56 tablets",
-      doctor: "Dr. Lisa Rodriguez",
-      info: "Metformin helps control blood sugar levels in people with type 2 diabetes by decreasing glucose production in the liver.",
+      selected: true,
     },
   ]);
 
-  const [selectedMeds, setSelectedMeds] = useState<number[]>(
-    medications.map((med) => med.id)
-  );
-
-  const handleCheckboxChange = (medId: number) => {
-    setSelectedMeds((prev) =>
-      prev.includes(medId)
-        ? prev.filter((id) => id !== medId)
-        : [...prev, medId]
+  const toggleMedication = (id: number) => {
+    setMedications((prevMeds) =>
+      prevMeds.map((med) =>
+        med.id === id ? { ...med, selected: !med.selected } : med
+      )
     );
+    setError(null);
   };
 
   const handleContinue = () => {
-    if (selectedMeds.length > 0) {
-      navigate("/delivery");
+    const selectedMeds = medications.filter((med) => med.selected);
+    if (selectedMeds.length === 0) {
+      setError("Please select at least one medication to continue");
+      return;
     }
+    navigate("/delivery");
   };
 
   return (
@@ -81,7 +80,7 @@ const MedicationsScreen: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen flex flex-col items-center px-4 pt-10 pb-20 relative"
+      className="min-h-screen flex flex-col items-center px-4 pt-10"
     >
       <BackButton previousRoute="/insurance" />
       
@@ -101,29 +100,28 @@ const MedicationsScreen: React.FC = () => {
             Your Prescribed Medications
           </h1>
           
-          <p className="text-center text-gray-600 mb-6">
+          <p className="text-center text-gray-600 mb-8">
             These medications are ready for delivery. You can deselect any you don't need.
           </p>
 
-          <div className="space-y-4 mb-6">
+          <div className="space-y-4">
             {medications.map((med) => (
               <Card
                 key={med.id}
-                className={`transition-all ${
-                  selectedMeds.includes(med.id)
-                    ? "border-primary"
-                    : "border-gray-200 opacity-60"
+                className={`overflow-hidden transition-all ${
+                  med.selected ? "border-accent bg-white" : "border-gray-200 bg-gray-50 opacity-70"
                 }`}
               >
                 <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <Checkbox
-                      id={`med-${med.id}`}
-                      checked={selectedMeds.includes(med.id)}
-                      onCheckedChange={() => handleCheckboxChange(med.id)}
-                    />
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-start space-x-4">
+                      <Checkbox
+                        id={`med-${med.id}`}
+                        checked={med.selected}
+                        onCheckedChange={() => toggleMedication(med.id)}
+                        className="mt-1"
+                      />
+                      <div>
                         <div>
                           <label
                             htmlFor={`med-${med.id}`}
@@ -134,50 +132,37 @@ const MedicationsScreen: React.FC = () => {
                           <p className="text-sm font-medium text-gray-700 mt-1">
                             {med.packaging}
                           </p>
-                          {med.doctor && (
-                            <p className="text-xs text-gray-500">
-                              {med.doctor}
-                            </p>
-                          )}
                         </div>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0"
-                              >
-                                <Info className="h-4 w-4" />
-                                <span className="sr-only">Info</span>
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p className="max-w-xs">{med.info}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+
+                        <p className="text-xs text-gray-500 mt-1">
+                          {med.description}
+                        </p>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {med.description}
-                      </p>
                     </div>
+                    
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="h-5 w-5 text-gray-400 hover:text-primary cursor-pointer" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Medication information</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
 
-          {selectedMeds.length === 0 && (
-            <div className="text-red-600 text-sm mb-4 text-center">
-              Please select at least one medication to continue.
-            </div>
+          {error && (
+            <div className="text-red-500 text-center mt-4">{error}</div>
           )}
 
           <Button
-            className="w-full py-6 text-lg"
+            className="w-full py-6 text-lg mt-8"
             onClick={handleContinue}
-            disabled={selectedMeds.length === 0}
           >
             Continue
           </Button>

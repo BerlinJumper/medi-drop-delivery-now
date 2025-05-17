@@ -10,6 +10,7 @@ import InsuranceScreen from "./components/screens/InsuranceScreen";
 import MedicationsScreen from "./components/screens/MedicationsScreen";
 import DeliveryMethodScreen from "./components/screens/DeliveryMethodScreen";
 import SummaryScreen from "./components/screens/SummaryScreen";
+import SettingsScreen from "./components/screens/SettingsScreen";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/medications" element={<MedicationsScreen />} />
           <Route path="/delivery" element={<DeliveryMethodScreen />} />
           <Route path="/summary" element={<SummaryScreen />} />
+          <Route path="/settings" element={<SettingsScreen />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
