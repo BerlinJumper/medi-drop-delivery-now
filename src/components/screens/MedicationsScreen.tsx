@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate } from "react-router-dom";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { motion } from "framer-motion";
-import { Info } from "lucide-react";
+import { Info, Home } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -83,6 +83,17 @@ const MedicationsScreen: React.FC = () => {
       className="min-h-screen flex flex-col items-center px-4 pt-10"
     >
       <BackButton previousRoute="/insurance" />
+
+      <div className="absolute top-4 right-4">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => navigate("/")}
+          className="text-primary hover:bg-accent/30"
+        >
+          <Home className="h-6 w-6" />
+        </Button>
+      </div>
       
       <div className="flex justify-center mb-6">
         <Logo size="small" />

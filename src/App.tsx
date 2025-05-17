@@ -5,6 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import WelcomeScreen from "./components/screens/WelcomeScreen";
+import MedicationTypeScreen from "./components/screens/MedicationTypeScreen";
+import OtcCatalogScreen from "./components/screens/OtcCatalogScreen";
 import AddressScreen from "./components/screens/AddressScreen";
 import InsuranceScreen from "./components/screens/InsuranceScreen";
 import MedicationsScreen from "./components/screens/MedicationsScreen";
@@ -23,6 +25,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<WelcomeScreen />} />
+          <Route path="/medication-type" element={<MedicationTypeScreen />} />
+          <Route path="/otc-catalog" element={<OtcCatalogScreen />} />
           <Route path="/address" element={<AddressScreen />} />
           <Route path="/insurance" element={<InsuranceScreen />} />
           <Route path="/medications" element={<MedicationsScreen />} />

@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { motion } from "framer-motion";
-import { Loader2, Camera, Check, X } from "lucide-react";
+import { Loader2, Camera, Check, X, Home } from "lucide-react";
+import { toast } from "sonner";
 import BackButton from "@/components/BackButton";
 import Logo from "@/components/Logo";
 
@@ -36,12 +37,11 @@ const InsuranceScreen: React.FC = () => {
   const simulateVerification = () => {
     setVerificationStatus("verifying");
     
-    // Simulate API verification
+    // Always succeed verification after 1.5 seconds
     setTimeout(() => {
-      // 80% chance of success for demo purposes
-      const isSuccess = Math.random() > 0.2;
-      setVerificationStatus(isSuccess ? "success" : "error");
-    }, 2000);
+      setVerificationStatus("success");
+      toast.success("Insurance verified successfully");
+    }, 1500);
   };
 
   const handleScanCard = () => {
@@ -69,6 +69,17 @@ const InsuranceScreen: React.FC = () => {
       className="min-h-screen flex flex-col items-center px-4 pt-10"
     >
       <BackButton previousRoute="/address" />
+      
+      <div className="absolute top-4 right-4">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => navigate("/")}
+          className="text-primary hover:bg-accent/30"
+        >
+          <Home className="h-6 w-6" />
+        </Button>
+      </div>
       
       <div className="flex justify-center mb-6">
         <Logo size="small" />

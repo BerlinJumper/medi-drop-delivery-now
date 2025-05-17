@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { motion } from "framer-motion";
-import { Car, Send } from "lucide-react";
+import { Car, Home } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import Logo from "@/components/Logo";
 
@@ -17,9 +17,42 @@ interface DeliveryOption {
   timeEstimate: string;
   description: string;
   price: string;
+  distance: string;
   note?: string;
   icon: React.ReactNode;
 }
+
+const DroneIcon = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="h-16 w-16 text-primary mb-2"
+  >
+    {/* Drone Body */}
+    <rect x="9" y="10" width="6" height="4" rx="1" />
+    
+    {/* Camera/Sensor */}
+    <circle cx="12" cy="12" r="1" fill="currentColor" />
+    
+    {/* Arms */}
+    <line x1="4" y1="8" x2="9" y2="12" />
+    <line x1="20" y1="8" x2="15" y2="12" />
+    <line x1="4" y1="16" x2="9" y2="12" />
+    <line x1="20" y1="16" x2="15" y2="12" />
+    
+    {/* Propellers */}
+    <circle cx="4" cy="8" r="2" />
+    <circle cx="20" cy="8" r="2" />
+    <circle cx="4" cy="16" r="2" />
+    <circle cx="20" cy="16" r="2" />
+  </svg>
+);
 
 const DeliveryMethodScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -32,6 +65,7 @@ const DeliveryMethodScreen: React.FC = () => {
       timeEstimate: "2–4 hours",
       description: "Standard courier delivery to your door.",
       price: "$3.99",
+      distance: "Within 10 miles",
       icon: <Car className="h-16 w-16 text-primary mb-2" />
     },
     {
@@ -40,8 +74,9 @@ const DeliveryMethodScreen: React.FC = () => {
       timeEstimate: "Within 1 hour",
       description: "Fast, eco-friendly drone drop-off.",
       price: "$9.99",
+      distance: "Within 2 miles",
       note: "Drone delivery may not be available in all locations.",
-      icon: <Send className="h-16 w-16 text-primary mb-2" />
+      icon: <DroneIcon />
     }
   ];
 
@@ -65,6 +100,17 @@ const DeliveryMethodScreen: React.FC = () => {
       className="min-h-screen flex flex-col items-center px-4 pt-10 relative"
     >
       <BackButton previousRoute="/medications" />
+
+      <div className="absolute top-4 right-4">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => navigate("/")}
+          className="text-primary hover:bg-accent/30"
+        >
+          <Home className="h-6 w-6" />
+        </Button>
+      </div>
       
       <div className="flex justify-center mb-6">
         <Logo size="small" />
@@ -110,6 +156,7 @@ const DeliveryMethodScreen: React.FC = () => {
                     <span className="text-lg font-bold text-primary">{option.price}</span>
                   </div>
                   <p className="text-lg font-medium">{option.timeEstimate}</p>
+                  <p className="text-blue-600 font-medium">{option.distance}</p>
                   <p className="text-gray-600 text-center mt-2">
                     {option.description}
                   </p>

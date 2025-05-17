@@ -42,7 +42,7 @@ const WelcomeScreen: React.FC = () => {
         </p>
         <Button
           className="w-full max-w-xs text-lg py-6"
-          onClick={() => navigate("/address")}
+          onClick={() => navigate("/medication-type")}
         >
           Start
         </Button>

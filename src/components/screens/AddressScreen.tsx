@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { motion } from "framer-motion";
+import { Home } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import Logo from "@/components/Logo";
 
@@ -56,7 +57,18 @@ const AddressScreen: React.FC = () => {
       transition={{ duration: 0.5 }}
       className="min-h-screen flex flex-col items-center px-4 pt-10 relative"
     >
-      <BackButton previousRoute="/" />
+      <BackButton previousRoute="/medication-type" />
+      
+      <div className="absolute top-4 right-4">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => navigate("/")}
+          className="text-primary hover:bg-accent/30"
+        >
+          <Home className="h-6 w-6" />
+        </Button>
+      </div>
       
       <div className="flex justify-center mb-6">
         <Logo size="small" />
