@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { motion } from "framer-motion";
 import { Home } from "lucide-react";
@@ -11,6 +11,7 @@ import Logo from "@/components/Logo";
 
 const AddressScreen: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [address, setAddress] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [suggestions] = useState([
@@ -19,6 +20,11 @@ const AddressScreen: React.FC = () => {
     "789 Pine Rd, Chicago, IL 60601",
   ]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Determine the previous route for the back button
+  const previousRoute = location.pathname.includes("otc-catalog") 
+    ? "/otc-catalog" 
+    : "/medication-type";
 
   const validateAddress = (address: string) => {
     return address.length >= 10;
@@ -44,7 +50,9 @@ const AddressScreen: React.FC = () => {
 
   const handleContinue = () => {
     if (validateAddress(address)) {
-      navigate("/insurance");
+      // Determine where to navigate based on the flow
+      const nextRoute = previousRoute === "/otc-catalog" ? "/delivery" : "/insurance";
+      navigate(nextRoute);
     } else {
       setError("Please enter a valid address");
     }
@@ -57,7 +65,7 @@ const AddressScreen: React.FC = () => {
       transition={{ duration: 0.5 }}
       className="min-h-screen flex flex-col items-center px-4 pt-10 relative"
     >
-      <BackButton previousRoute="/medication-type" />
+      <BackButton previousRoute={previousRoute} />
       
       <div className="absolute top-4 right-4">
         <Button 

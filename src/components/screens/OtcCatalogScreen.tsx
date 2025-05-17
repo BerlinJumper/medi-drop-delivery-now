@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -264,7 +263,7 @@ const OtcCatalogScreen: React.FC = () => {
       id: 12,
       name: "Mouth and Throat Spray",
       description: "Soothes throat and mouth irritation",
-      image: "/lovable-uploads/d143fe62-e2cf-4b9a-96fc-2ef3009c51e6.png",
+      image: "/lovable-uploads/19333698-bf12-4c09-92cb-594f6815d80f.png",
       icon: <SprayIcon className="h-12 w-12" />,
       color: "#F0FFFF",
       sizes: [
