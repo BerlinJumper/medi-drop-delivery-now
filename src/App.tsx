@@ -1,9 +1,15 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import WelcomeScreen from "./components/screens/WelcomeScreen";
+import AddressScreen from "./components/screens/AddressScreen";
+import InsuranceScreen from "./components/screens/InsuranceScreen";
+import MedicationsScreen from "./components/screens/MedicationsScreen";
+import DeliveryMethodScreen from "./components/screens/DeliveryMethodScreen";
+import SummaryScreen from "./components/screens/SummaryScreen";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -15,8 +21,12 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/" element={<WelcomeScreen />} />
+          <Route path="/address" element={<AddressScreen />} />
+          <Route path="/insurance" element={<InsuranceScreen />} />
+          <Route path="/medications" element={<MedicationsScreen />} />
+          <Route path="/delivery" element={<DeliveryMethodScreen />} />
+          <Route path="/summary" element={<SummaryScreen />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
