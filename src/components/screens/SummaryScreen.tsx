@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MapPin, Pill, Truck, Check, Edit2, Send } from "lucide-react";
+import BackButton from "@/components/BackButton";
+import Logo from "@/components/Logo";
 
 const SummaryScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -35,8 +37,23 @@ const SummaryScreen: React.FC = () => {
     navigate("/");
   };
 
+  // Example delivery details (would come from app state in a real app)
+  const deliveryDetails = {
+    method: "drone",
+    price: "$9.99",
+    estimate: "Within 1 hour"
+  };
+
+  const totalOrderPrice = "$29.99"; // Example total price
+
   return (
-    <div className="min-h-screen flex flex-col items-center px-4 pt-10 pb-20">
+    <div className="min-h-screen flex flex-col items-center px-4 pt-10 pb-20 relative">
+      {!orderPlaced && <BackButton previousRoute="/delivery" />}
+      
+      <div className="flex justify-center mb-6">
+        <Logo size="small" />
+      </div>
+      
       {!orderPlaced ? (
         <motion.div
           initial={{ opacity: 0 }}
@@ -117,7 +134,21 @@ const SummaryScreen: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
                   <Send className="h-5 w-5" />
-                  <span>Drone Delivery (Within 1 hour)</span>
+                  <span>Drone Delivery ({deliveryDetails.estimate})</span>
+                </div>
+                <div className="mt-2 text-gray-700">
+                  <span className="font-medium">Price: </span>
+                  <span>{deliveryDetails.price}</span>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Order Total */}
+            <Card className="shadow-sm bg-white">
+              <CardContent className="p-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-semibold">Total</h3>
+                  <span className="text-lg font-bold">{totalOrderPrice}</span>
                 </div>
               </CardContent>
             </Card>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import WaveBackground from "@/components/WaveBackground";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import Logo from "@/components/Logo";
 
 const WelcomeScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -19,9 +20,11 @@ const WelcomeScreen: React.FC = () => {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
-        className="text-center z-10"
+        className="text-center z-10 flex flex-col items-center"
       >
-        <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">MediDrop</h1>
+        <div className="mb-6">
+          <Logo size="large" />
+        </div>
         <p className="text-lg md:text-xl text-gray-600 mb-8">
           Get your prescription medication delivered to your home.
         </p>

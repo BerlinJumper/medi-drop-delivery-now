@@ -13,6 +13,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import BackButton from "@/components/BackButton";
+import Logo from "@/components/Logo";
 
 interface Medication {
   id: number;
@@ -71,8 +73,14 @@ const MedicationsScreen: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen flex flex-col items-center px-4 pt-10 pb-20"
+      className="min-h-screen flex flex-col items-center px-4 pt-10 pb-20 relative"
     >
+      <BackButton previousRoute="/insurance" />
+      
+      <div className="flex justify-center mb-6">
+        <Logo size="small" />
+      </div>
+      
       <ProgressIndicator currentStep={3} totalSteps={4} />
       
       <div className="w-full max-w-md">
@@ -81,9 +89,13 @@ const MedicationsScreen: React.FC = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <h1 className="text-2xl md:text-3xl font-bold text-center mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-center mb-4">
             Your Prescribed Medications
           </h1>
+          
+          <p className="text-center text-gray-600 mb-6">
+            These medications are ready for delivery. You can deselect any you don't need.
+          </p>
 
           <div className="space-y-4 mb-6">
             {medications.map((med) => (
@@ -142,7 +154,7 @@ const MedicationsScreen: React.FC = () => {
           </div>
 
           {selectedMeds.length === 0 && (
-            <div className="text-red-600 text-sm mb-4">
+            <div className="text-red-600 text-sm mb-4 text-center">
               You must select at least one medication.
             </div>
           )}

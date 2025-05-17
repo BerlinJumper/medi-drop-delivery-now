@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { motion } from "framer-motion";
+import BackButton from "@/components/BackButton";
+import Logo from "@/components/Logo";
 
 const AddressScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -52,8 +54,14 @@ const AddressScreen: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen flex flex-col items-center px-4 pt-10"
+      className="min-h-screen flex flex-col items-center px-4 pt-10 relative"
     >
+      <BackButton previousRoute="/" />
+      
+      <div className="flex justify-center mb-6">
+        <Logo size="small" />
+      </div>
+      
       <ProgressIndicator currentStep={1} totalSteps={4} />
       
       <div className="w-full max-w-md">
