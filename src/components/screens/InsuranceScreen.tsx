@@ -1,9 +1,9 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { motion } from "framer-motion";
 import { Loader2, Camera, Check, X, Home } from "lucide-react";
@@ -21,6 +21,7 @@ type VerificationStatus = "idle" | "verifying" | "success" | "error";
 
 const InsuranceScreen: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [formData, setFormData] = useState<InsuranceFormState>({
     provider: "",
@@ -28,6 +29,23 @@ const InsuranceScreen: React.FC = () => {
     dob: "",
   });
   const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>("idle");
+
+  useEffect(() => {
+    // Enforce that this screen is only accessible in the prescription flow
+    const flowType = localStorage.getItem('medicationFlow');
+    
+    if (flowType !== 'prescription') {
+      toast.error("Insurance information is only required for prescription medications");
+      navigate('/medication-type');
+    }
+    
+    // Enforce that address must be entered first
+    const address = localStorage.getItem('deliveryAddress');
+    if (!address) {
+      toast.error("Please enter your delivery address first");
+      navigate('/address', { state: { flowType: 'prescription' } });
+    }
+  }, [navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -41,6 +59,7 @@ const InsuranceScreen: React.FC = () => {
     setTimeout(() => {
       setVerificationStatus("success");
       toast.success("Insurance verified successfully");
+      localStorage.setItem('insuranceVerified', 'true');
     }, 1500);
   };
 
@@ -58,7 +77,7 @@ const InsuranceScreen: React.FC = () => {
   };
 
   const handleContinue = () => {
-    navigate("/medications");
+    navigate("/medications", { state: { from: 'insurance', flowType: 'prescription' } });
   };
 
   return (
@@ -98,13 +117,14 @@ const InsuranceScreen: React.FC = () => {
           </h1>
 
           <div className="space-y-6">
-            <Card className="shadow-md">
+            <Card className="shadow-md" style={{ backgroundColor: "#e0f0ff" }}>
               <CardHeader className="font-semibold text-lg">Scan Insurance Card</CardHeader>
               <CardContent>
                 <Button 
                   onClick={handleScanCard}
                   className="w-full flex items-center justify-center gap-2"
                   disabled={verificationStatus === "verifying"}
+                  style={{ backgroundColor: "#002b5c" }}
                 >
                   <Camera className="w-5 h-5 mr-2" />
                   Scan your card
@@ -118,7 +138,7 @@ const InsuranceScreen: React.FC = () => {
               <div className="border-t border-gray-300 w-full"></div>
             </div>
 
-            <Card className="shadow-md">
+            <Card className="shadow-md" style={{ backgroundColor: "#e0f0ff" }}>
               <CardHeader 
                 className="font-semibold text-lg cursor-pointer"
                 onClick={() => setShowManualEntry(!showManualEntry)}
@@ -149,6 +169,7 @@ const InsuranceScreen: React.FC = () => {
                     onClick={handleSubmitManual}
                     className="w-full"
                     disabled={verificationStatus === "verifying" || !formData.provider || !formData.number || !formData.dob}
+                    style={{ backgroundColor: "#002b5c" }}
                   >
                     Verify
                   </Button>
@@ -188,6 +209,7 @@ const InsuranceScreen: React.FC = () => {
               className="w-full py-6 text-lg"
               onClick={handleContinue}
               disabled={verificationStatus !== "success"}
+              style={{ backgroundColor: "#002b5c" }}
             >
               Continue
             </Button>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -276,6 +276,24 @@ const OtcCatalogScreen: React.FC = () => {
 
   const [cartCount, setCartCount] = useState(0);
 
+  useEffect(() => {
+    // Enforce that this screen is only accessible in the OTC flow
+    const flowType = localStorage.getItem('medicationFlow');
+    
+    if (flowType !== 'otc') {
+      toast.error("This catalog is only for over-the-counter medications");
+      navigate('/medication-type');
+      return;
+    }
+    
+    // Enforce that address must be entered first
+    const address = localStorage.getItem('deliveryAddress');
+    if (!address) {
+      toast.error("Please enter your delivery address first");
+      navigate('/address', { state: { flowType: 'otc' } });
+    }
+  }, [navigate]);
+
   const handleSizeSelect = (productId: number, size: ProductSize) => {
     setProducts(products.map(product => {
       if (product.id === productId) {
@@ -328,7 +346,7 @@ const OtcCatalogScreen: React.FC = () => {
 
   const handleContinue = () => {
     if (cartCount > 0) {
-      navigate('/delivery');
+      navigate('/delivery', { state: { from: 'otc-catalog', flowType: 'otc' } });
     } else {
       toast.error("Please add at least one item to your cart");
     }
@@ -341,7 +359,7 @@ const OtcCatalogScreen: React.FC = () => {
       transition={{ duration: 0.5 }}
       className="min-h-screen flex flex-col items-center px-4 pt-10 pb-24"
     >
-      <BackButton previousRoute="/medication-type" />
+      <BackButton previousRoute="/address" />
 
       <div className="absolute top-4 right-4">
         <Button 
@@ -472,6 +490,7 @@ const OtcCatalogScreen: React.FC = () => {
                 <Button
                   className="w-full py-6 text-lg"
                   onClick={handleContinue}
+                  style={{ backgroundColor: "#002b5c" }}
                 >
                   Continue to Delivery
                 </Button>

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -8,18 +8,37 @@ import { motion } from "framer-motion";
 import { Home, MapPin } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import Logo from "@/components/Logo";
+import { toast } from "sonner";
 
 const AddressScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [address, setAddress] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [flowType, setFlowType] = useState<'prescription' | 'otc' | null>(null);
   const [suggestions] = useState([
     "123 Main St, New York, NY 10001",
     "456 Oak Ave, San Francisco, CA 94102",
     "789 Pine Rd, Chicago, IL 60601",
   ]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => {
+    // Get flow type from location state or localStorage
+    const stateFlowType = location.state?.flowType;
+    const storedFlowType = localStorage.getItem('medicationFlow');
+    
+    // Set flow type from state or localStorage
+    const currentFlowType = stateFlowType || storedFlowType;
+    
+    if (currentFlowType === 'prescription' || currentFlowType === 'otc') {
+      setFlowType(currentFlowType);
+    } else {
+      // If no flow type is found, redirect to medication type screen
+      toast.error("Please select a medication type first");
+      navigate('/medication-type');
+    }
+  }, [location, navigate]);
 
   // Determine the previous route for the back button
   const previousRoute = "/medication-type";
@@ -48,15 +67,14 @@ const AddressScreen: React.FC = () => {
 
   const handleContinue = () => {
     if (validateAddress(address)) {
-      // If coming from OTC selection, we're already in the non-prescription flow
-      // If location state has otc=true, go to OTC catalog next
-      const fromMedicationType = location.state?.from === 'medicationType';
-      const isOtc = location.state?.otc === true;
+      // Store address in localStorage for reference
+      localStorage.setItem('deliveryAddress', address);
       
-      if (isOtc || fromMedicationType) {
-        navigate('/otc-catalog');
+      // Navigate based on flow type
+      if (flowType === 'otc') {
+        navigate('/otc-catalog', { state: { from: 'address', flowType: 'otc' } });
       } else {
-        navigate('/insurance');
+        navigate('/insurance', { state: { from: 'address', flowType: 'prescription' } });
       }
     } else {
       setError("Please enter a valid address");
@@ -137,6 +155,7 @@ const AddressScreen: React.FC = () => {
             className="w-full py-6 text-lg"
             disabled={!validateAddress(address)}
             onClick={handleContinue}
+            style={{ backgroundColor: "#002b5c" }}
           >
             Continue
           </Button>
