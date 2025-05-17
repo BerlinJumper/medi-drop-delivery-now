@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -57,6 +57,24 @@ const MedicationsScreen: React.FC = () => {
     },
   ]);
 
+  useEffect(() => {
+    // Enforce that this screen is only accessible in the prescription flow
+    const flowType = localStorage.getItem('medicationFlow');
+    
+    if (flowType !== 'prescription') {
+      toast.error("This screen is only for prescription medications");
+      navigate('/medication-type');
+      return;
+    }
+    
+    // Enforce that insurance must be verified first
+    const insuranceVerified = localStorage.getItem('insuranceVerified');
+    if (insuranceVerified !== 'true') {
+      toast.error("Please verify your insurance first");
+      navigate('/insurance');
+    }
+  }, [navigate]);
+
   const toggleMedication = (id: number) => {
     setMedications((prevMeds) =>
       prevMeds.map((med) =>
@@ -72,7 +90,7 @@ const MedicationsScreen: React.FC = () => {
       setError("Please select at least one medication to continue");
       return;
     }
-    navigate("/delivery");
+    navigate("/delivery", { state: { from: 'medications', flowType: 'prescription' } });
   };
 
   return (
@@ -122,6 +140,7 @@ const MedicationsScreen: React.FC = () => {
                 className={`overflow-hidden transition-all ${
                   med.selected ? "border-accent bg-white" : "border-gray-200 bg-gray-50 opacity-70"
                 }`}
+                style={{ backgroundColor: med.selected ? "#e0f0ff" : "#f9f9f9" }}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -174,6 +193,7 @@ const MedicationsScreen: React.FC = () => {
           <Button
             className="w-full py-6 text-lg mt-8"
             onClick={handleContinue}
+            style={{ backgroundColor: "#002b5c" }}
           >
             Continue
           </Button>

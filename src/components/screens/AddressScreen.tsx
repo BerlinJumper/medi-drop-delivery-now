@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { motion } from "framer-motion";
 import { Home, Loader2, MapPin } from "lucide-react";
@@ -13,11 +13,33 @@ import { toast } from "sonner";
 
 const AddressScreen: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [address, setAddress] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<google.maps.places.PlaceResult | null>(null);
   const [coordinates, setCoordinates] = useState<{ lat: number; lon: number } | null>(null);
+  const [flowType, setFlowType] = useState<'prescription' | 'otc' | null>(null);
+
+  useEffect(() => {
+    // Get flow type from location state or localStorage
+    const stateFlowType = location.state?.flowType;
+    const storedFlowType = localStorage.getItem('medicationFlow');
+
+    // Set flow type from state or localStorage
+    const currentFlowType = stateFlowType || storedFlowType;
+
+    if (currentFlowType === 'prescription' || currentFlowType === 'otc') {
+      setFlowType(currentFlowType);
+    } else {
+      // If no flow type is found, redirect to medication type screen
+      toast.error("Please select a medication type first");
+      navigate('/medication-type');
+    }
+  }, [location, navigate]);
+
+  // Determine the previous route for the back button
+  const previousRoute = "/medication-type";
 
   const validateAddress = (address: string) => {
     return address.length >= 10;
@@ -106,8 +128,17 @@ const AddressScreen: React.FC = () => {
       console.log("Delivery options response:", deliveryOptions);
 
       if (deliveryOptions) {
+        // Store address in localStorage for reference
+        localStorage.setItem('deliveryAddress', address);
+
         toast.success("Location verified successfully");
-        navigate("/insurance");
+
+        // Navigate based on flow type
+        if (flowType === 'otc') {
+          navigate('/otc-catalog', { state: { from: 'address', flowType: 'otc' } });
+        } else {
+          navigate('/insurance', { state: { from: 'address', flowType: 'prescription' } });
+        }
       } else {
         throw new Error("No delivery options returned");
       }
@@ -127,7 +158,7 @@ const AddressScreen: React.FC = () => {
       transition={{ duration: 0.5 }}
       className="min-h-screen flex flex-col items-center px-4 pt-10"
     >
-      <BackButton previousRoute="/medication-type" />
+      <BackButton previousRoute={previousRoute} />
 
       <div className="absolute top-4 right-4">
         <Button
@@ -171,7 +202,6 @@ const AddressScreen: React.FC = () => {
                   placeholder="Start typing your address in Germany..."
                   options={{
                     types: ['address'],
-                    // componentRestrictions: { country: 'FR' }
                   }}
                 />
                 <Button

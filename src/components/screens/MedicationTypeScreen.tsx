@@ -14,9 +14,13 @@ const MedicationTypeScreen: React.FC = () => {
 
   const handleSelectType = (type: 'prescription' | 'otc') => {
     if (type === 'prescription') {
-      navigate('/address');
+      // Store flow type in localStorage for strict flow control
+      localStorage.setItem('medicationFlow', 'prescription');
+      navigate('/address', { state: { from: 'medicationType', flowType: 'prescription' } });
     } else {
-      navigate('/otc-catalog');
+      // Store flow type in localStorage for strict flow control
+      localStorage.setItem('medicationFlow', 'otc');
+      navigate('/address', { state: { from: 'medicationType', flowType: 'otc' } });
     }
   };
 
@@ -63,6 +67,7 @@ const MedicationTypeScreen: React.FC = () => {
             <Card 
               className="hover:shadow-md cursor-pointer transition-all hover:border-primary"
               onClick={() => handleSelectType('prescription')}
+              style={{ backgroundColor: "#e0f0ff" }}
             >
               <CardContent className="p-8 flex flex-col items-center">
                 <Pill className="h-16 w-16 text-primary mb-4" />
@@ -76,6 +81,7 @@ const MedicationTypeScreen: React.FC = () => {
             <Card
               className="hover:shadow-md cursor-pointer transition-all hover:border-primary"
               onClick={() => handleSelectType('otc')}
+              style={{ backgroundColor: "#e0f0ff" }}
             >
               <CardContent className="p-8 flex flex-col items-center">
                 <ShoppingCart className="h-16 w-16 text-primary mb-4" />
