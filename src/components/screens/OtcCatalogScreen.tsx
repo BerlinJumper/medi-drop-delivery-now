@@ -11,10 +11,11 @@ import {
 } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Plus, Minus, ShoppingCart, Home, Pill, PillIcon, Eye, Thermometer, Droplets } from "lucide-react";
+import { Plus, Minus, ShoppingCart, Home, PillIcon, Eye, Thermometer, Droplets } from "lucide-react";
 import { toast } from "sonner";
 import BackButton from "@/components/BackButton";
 import Logo from "@/components/Logo";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 // Custom icons for items that don't have direct Lucide equivalents
 const BottleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -138,7 +139,8 @@ const OtcCatalogScreen: React.FC = () => {
       id: 2,
       name: "Ibuprofen 400mg",
       description: "Anti-inflammatory pain relief",
-      icon: <Pill className="h-12 w-12" />,
+      image: "/lovable-uploads/36a8080e-5f9e-4480-ad6b-e25989d0af17.png",
+      icon: <PillIcon className="h-12 w-12" />,
       color: "#FFE9E9",
       sizes: [
         { label: "10 tablets", price: 4.49 },
@@ -151,7 +153,8 @@ const OtcCatalogScreen: React.FC = () => {
       id: 3,
       name: "Antihistamine (Cetirizine)",
       description: "For allergy relief and hay fever",
-      icon: <Pill className="h-12 w-12" />,
+      image: "/lovable-uploads/c6b50a14-7d49-4e32-b986-642b0d48a904.png",
+      icon: <PillIcon className="h-12 w-12" />,
       color: "#E6FFEA",
       sizes: [
         { label: "7 tablets", price: 4.99 },
@@ -163,6 +166,7 @@ const OtcCatalogScreen: React.FC = () => {
       id: 4,
       name: "Nasal Spray",
       description: "For congestion and sinus relief",
+      image: "/lovable-uploads/e66de9ac-dcd3-40af-8fe0-5b8c4080845b.png",
       icon: <SprayIcon className="h-12 w-12" />,
       color: "#E0F0FF",
       sizes: [
@@ -175,6 +179,7 @@ const OtcCatalogScreen: React.FC = () => {
       id: 5,
       name: "Cough Syrup",
       description: "For dry and tickly cough relief",
+      image: "/lovable-uploads/3f7bbbab-f955-43c4-b0e9-c79c1fa32e1d.png",
       icon: <BottleIcon className="h-12 w-12" />,
       color: "#F5E6FF",
       sizes: [
@@ -257,13 +262,14 @@ const OtcCatalogScreen: React.FC = () => {
     },
     {
       id: 12,
-      name: "Electrolyte Powder Sachets",
-      description: "Rehydration for active lifestyles",
-      icon: <Droplets className="h-12 w-12" />,
+      name: "Mouth and Throat Spray",
+      description: "Soothes throat and mouth irritation",
+      image: "/lovable-uploads/d143fe62-e2cf-4b9a-96fc-2ef3009c51e6.png",
+      icon: <SprayIcon className="h-12 w-12" />,
       color: "#F0FFFF",
       sizes: [
-        { label: "5 sachets", price: 6.99 },
-        { label: "10 sachets", price: 12.49 },
+        { label: "30ml", price: 6.99 },
+        { label: "50ml", price: 12.49 },
       ],
       quantity: 0
     },
@@ -381,20 +387,22 @@ const OtcCatalogScreen: React.FC = () => {
               <Card key={product.id} className="overflow-hidden">
                 <CardContent className="p-4">
                   {product.image ? (
-                    <div className="aspect-video rounded-lg mb-3 overflow-hidden flex items-center justify-center bg-white">
+                    <AspectRatio ratio={4/3} className="bg-white rounded-lg mb-3 overflow-hidden">
                       <img 
                         src={product.image} 
                         alt={product.name}
-                        className="object-contain w-full h-full max-h-36"
+                        className="object-contain w-full h-full"
                       />
-                    </div>
+                    </AspectRatio>
                   ) : (
-                    <div 
-                      className="aspect-video rounded-lg mb-3 flex items-center justify-center" 
-                      style={{ backgroundColor: product.color }}
-                    >
-                      {product.icon}
-                    </div>
+                    <AspectRatio ratio={4/3} className="rounded-lg mb-3">
+                      <div 
+                        className="w-full h-full flex items-center justify-center" 
+                        style={{ backgroundColor: product.color }}
+                      >
+                        {product.icon}
+                      </div>
+                    </AspectRatio>
                   )}
                   
                   <h3 className="font-semibold text-lg">{product.name}</h3>
