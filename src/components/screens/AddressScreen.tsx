@@ -64,7 +64,7 @@ const AddressScreen: React.FC = () => {
       
       <ProgressIndicator currentStep={1} totalSteps={4} />
       
-      <div className="w-full max-w-lg">
+      <div className="w-full max-w-2xl">
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}

@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { motion } from "framer-motion";
 import { Loader2, Camera, Check, X } from "lucide-react";
+import BackButton from "@/components/BackButton";
+import Logo from "@/components/Logo";
 
 interface InsuranceFormState {
   provider: string;
@@ -66,9 +68,15 @@ const InsuranceScreen: React.FC = () => {
       transition={{ duration: 0.5 }}
       className="min-h-screen flex flex-col items-center px-4 pt-10"
     >
+      <BackButton previousRoute="/address" />
+      
+      <div className="flex justify-center mb-6">
+        <Logo size="small" />
+      </div>
+      
       <ProgressIndicator currentStep={2} totalSteps={4} />
       
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-2xl">
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}

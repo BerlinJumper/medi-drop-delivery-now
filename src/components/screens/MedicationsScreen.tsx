@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -5,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate } from "react-router-dom";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { motion } from "framer-motion";
-import { Info, Pill } from "lucide-react";
+import { Info } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -31,7 +32,7 @@ const MedicationsScreen: React.FC = () => {
     {
       id: 1,
       name: "Lisinopril",
-      dosage: "10mg, once daily",
+      dosage: "10mg",
       description: "For blood pressure management",
       packaging: "Pack of 30 tablets",
       doctor: "Dr. Sarah Johnson",
@@ -40,7 +41,7 @@ const MedicationsScreen: React.FC = () => {
     {
       id: 2,
       name: "Atorvastatin",
-      dosage: "20mg, once daily at bedtime",
+      dosage: "20mg",
       description: "For cholesterol management",
       packaging: "Pack of 28 tablets",
       doctor: "Dr. Michael Chen",
@@ -49,7 +50,7 @@ const MedicationsScreen: React.FC = () => {
     {
       id: 3,
       name: "Metformin",
-      dosage: "500mg, twice daily with meals",
+      dosage: "500mg",
       description: "For blood sugar control",
       packaging: "Pack of 56 tablets",
       doctor: "Dr. Lisa Rodriguez",
@@ -126,9 +127,8 @@ const MedicationsScreen: React.FC = () => {
                         <div>
                           <label
                             htmlFor={`med-${med.id}`}
-                            className="text-lg font-medium cursor-pointer flex items-center gap-2"
+                            className="text-lg font-medium cursor-pointer"
                           >
-                            <Pill className="h-5 w-5 text-primary" />
                             {med.name} {med.dosage}
                           </label>
                           <p className="text-sm font-medium text-gray-700 mt-1">
@@ -136,7 +136,7 @@ const MedicationsScreen: React.FC = () => {
                           </p>
                           {med.doctor && (
                             <p className="text-xs text-gray-500">
-                              Prescribed by: {med.doctor}
+                              {med.doctor}
                             </p>
                           )}
                         </div>
