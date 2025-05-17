@@ -44,7 +44,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
           </div>
           {index < totalSteps - 1 && (
             <div
-              className={cn("progress-line h-0.5 w-10 mx-4", {
+              className={cn("progress-line h-0.5 w-16 mx-6", {
                 "bg-primary": index + 1 < currentStep,
                 "bg-gray-200": index + 1 >= currentStep,
               })}

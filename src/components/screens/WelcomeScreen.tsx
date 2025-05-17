@@ -20,7 +20,7 @@ const WelcomeScreen: React.FC = () => {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
-        className="text-center z-10 flex flex-col items-center"
+        className="text-center z-10 flex flex-col items-center w-full max-w-2xl"
       >
         <div className="mb-6">
           <Logo size="large" />

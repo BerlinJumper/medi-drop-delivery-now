@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate } from "react-router-dom";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { motion } from "framer-motion";
-import { Info } from "lucide-react";
+import { Info, Pills } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -22,6 +22,8 @@ interface Medication {
   dosage: string;
   description: string;
   info: string;
+  packaging: string;
+  doctor?: string;
 }
 
 const MedicationsScreen: React.FC = () => {
@@ -32,6 +34,8 @@ const MedicationsScreen: React.FC = () => {
       name: "Lisinopril",
       dosage: "10mg, once daily",
       description: "For blood pressure management",
+      packaging: "Pack of 30 tablets",
+      doctor: "Dr. Sarah Johnson",
       info: "Lisinopril is an ACE inhibitor that widens blood vessels to lower blood pressure and improve blood flow.",
     },
     {
@@ -39,6 +43,8 @@ const MedicationsScreen: React.FC = () => {
       name: "Atorvastatin",
       dosage: "20mg, once daily at bedtime",
       description: "For cholesterol management",
+      packaging: "Pack of 28 tablets",
+      doctor: "Dr. Michael Chen",
       info: "Atorvastatin is a statin that reduces the production of cholesterol in the liver to lower LDL levels.",
     },
     {
@@ -46,6 +52,8 @@ const MedicationsScreen: React.FC = () => {
       name: "Metformin",
       dosage: "500mg, twice daily with meals",
       description: "For blood sugar control",
+      packaging: "Pack of 56 tablets",
+      doctor: "Dr. Lisa Rodriguez",
       info: "Metformin helps control blood sugar levels in people with type 2 diabetes by decreasing glucose production in the liver.",
     },
   ]);
@@ -83,7 +91,7 @@ const MedicationsScreen: React.FC = () => {
       
       <ProgressIndicator currentStep={3} totalSteps={4} />
       
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-2xl">
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -116,12 +124,23 @@ const MedicationsScreen: React.FC = () => {
                     />
                     <div className="flex-1">
                       <div className="flex justify-between items-start">
-                        <label
-                          htmlFor={`med-${med.id}`}
-                          className="text-lg font-medium cursor-pointer"
-                        >
-                          {med.name}
-                        </label>
+                        <div>
+                          <label
+                            htmlFor={`med-${med.id}`}
+                            className="text-lg font-medium cursor-pointer flex items-center gap-2"
+                          >
+                            <Pills className="h-5 w-5 text-primary" />
+                            {med.name} {med.dosage}
+                          </label>
+                          <p className="text-sm font-medium text-gray-700 mt-1">
+                            {med.packaging}
+                          </p>
+                          {med.doctor && (
+                            <p className="text-xs text-gray-500">
+                              Prescribed by: {med.doctor}
+                            </p>
+                          )}
+                        </div>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -140,9 +159,6 @@ const MedicationsScreen: React.FC = () => {
                           </Tooltip>
                         </TooltipProvider>
                       </div>
-                      <p className="text-sm font-medium text-gray-500">
-                        {med.dosage}
-                      </p>
                       <p className="text-sm text-gray-600 mt-1">
                         {med.description}
                       </p>
@@ -155,7 +171,7 @@ const MedicationsScreen: React.FC = () => {
 
           {selectedMeds.length === 0 && (
             <div className="text-red-600 text-sm mb-4 text-center">
-              You must select at least one medication.
+              Please select at least one medication to continue.
             </div>
           )}
 

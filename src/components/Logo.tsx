@@ -27,11 +27,11 @@ const Logo: React.FC<LogoProps> = ({ size = "medium" }) => {
       <div className={`bg-primary rounded-full p-2 ${dimensions[size]}`}>
         <img 
           src="/lovable-uploads/9d56aaa5-97aa-4547-b7d5-ac71a1977dfd.png" 
-          alt="MediDrop Logo" 
+          alt="MediFly Logo" 
           className="w-full h-full object-contain"
         />
       </div>
-      <span className="text-primary font-bold ml-2 text-lg md:text-xl">MediDrop</span>
+      <span className="text-primary font-bold ml-2 text-lg md:text-xl">MediFly</span>
     </div>
   );
 };
