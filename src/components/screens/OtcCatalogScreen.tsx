@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Plus, Minus, ShoppingCart, Home } from "lucide-react";
+import { Plus, Minus, ShoppingCart, Home, Pill, PillIcon, Eye, Thermometer, Droplets, Bottle, Spray, Tablets, Vitamin } from "lucide-react";
 import { toast } from "sonner";
 import BackButton from "@/components/BackButton";
 import Logo from "@/components/Logo";
@@ -25,7 +25,9 @@ interface Product {
   id: number;
   name: string;
   description: string;
-  image: string;
+  image?: string;
+  icon: React.ReactNode;
+  color: string;
   sizes: ProductSize[];
   selectedSize?: ProductSize;
   quantity: number;
@@ -38,7 +40,8 @@ const OtcCatalogScreen: React.FC = () => {
       id: 1,
       name: "Paracetamol Tablets",
       description: "For headache, pain, and fever relief",
-      image: "/placeholder.svg",
+      icon: <PillIcon className="h-12 w-12" />,
+      color: "#E9F7FF",
       sizes: [
         { label: "10 tablets", price: 3.99 },
         { label: "20 tablets", price: 6.99 },
@@ -50,7 +53,8 @@ const OtcCatalogScreen: React.FC = () => {
       id: 2,
       name: "Ibuprofen 400mg",
       description: "Anti-inflammatory pain relief",
-      image: "/placeholder.svg",
+      icon: <Pill className="h-12 w-12" />,
+      color: "#FFE9E9",
       sizes: [
         { label: "10 tablets", price: 4.49 },
         { label: "20 tablets", price: 7.99 },
@@ -62,7 +66,8 @@ const OtcCatalogScreen: React.FC = () => {
       id: 3,
       name: "Antihistamine (Cetirizine)",
       description: "For allergy relief and hay fever",
-      image: "/placeholder.svg",
+      icon: <Pill className="h-12 w-12" />,
+      color: "#E6FFEA",
       sizes: [
         { label: "7 tablets", price: 4.99 },
         { label: "14 tablets", price: 8.99 },
@@ -73,7 +78,8 @@ const OtcCatalogScreen: React.FC = () => {
       id: 4,
       name: "Nasal Spray",
       description: "For congestion and sinus relief",
-      image: "/placeholder.svg",
+      icon: <Spray className="h-12 w-12" />,
+      color: "#E0F0FF",
       sizes: [
         { label: "15ml", price: 5.49 },
         { label: "30ml", price: 9.49 },
@@ -84,7 +90,8 @@ const OtcCatalogScreen: React.FC = () => {
       id: 5,
       name: "Cough Syrup",
       description: "For dry and tickly cough relief",
-      image: "/placeholder.svg",
+      icon: <Bottle className="h-12 w-12" />,
+      color: "#F5E6FF",
       sizes: [
         { label: "100ml", price: 6.99 },
         { label: "200ml", price: 12.99 },
@@ -95,7 +102,8 @@ const OtcCatalogScreen: React.FC = () => {
       id: 6,
       name: "Throat Lozenges",
       description: "Soothing relief for sore throats",
-      image: "/placeholder.svg",
+      icon: <Tablets className="h-12 w-12" />,
+      color: "#FFF4E0",
       sizes: [
         { label: "12 lozenges", price: 3.49 },
         { label: "24 lozenges", price: 5.99 },
@@ -106,7 +114,8 @@ const OtcCatalogScreen: React.FC = () => {
       id: 7,
       name: "Pain Relief Gel",
       description: "Topical relief for muscle & joint pain",
-      image: "/placeholder.svg",
+      icon: <Droplets className="h-12 w-12" />,
+      color: "#E0F5FF",
       sizes: [
         { label: "30g", price: 7.49 },
         { label: "50g", price: 11.99 },
@@ -117,7 +126,8 @@ const OtcCatalogScreen: React.FC = () => {
       id: 8,
       name: "Digestive Enzyme Tablets",
       description: "Aids digestion and reduces bloating",
-      image: "/placeholder.svg",
+      icon: <Tablets className="h-12 w-12" />,
+      color: "#FFF0E0",
       sizes: [
         { label: "20 tablets", price: 8.99 },
         { label: "40 tablets", price: 15.99 },
@@ -128,7 +138,8 @@ const OtcCatalogScreen: React.FC = () => {
       id: 9,
       name: "Vitamin C 1000mg",
       description: "Immune system support",
-      image: "/placeholder.svg",
+      icon: <Vitamin className="h-12 w-12" />,
+      color: "#FFFFE0",
       sizes: [
         { label: "30 tablets", price: 6.49 },
         { label: "60 tablets", price: 11.49 },
@@ -139,7 +150,8 @@ const OtcCatalogScreen: React.FC = () => {
       id: 10,
       name: "Eye Drops",
       description: "Relieves dry and irritated eyes",
-      image: "/placeholder.svg",
+      icon: <Eye className="h-12 w-12" />,
+      color: "#E0F0FF",
       sizes: [
         { label: "10ml", price: 5.99 },
         { label: "20ml", price: 9.99 },
@@ -150,7 +162,8 @@ const OtcCatalogScreen: React.FC = () => {
       id: 11,
       name: "Antacid Tablets",
       description: "Relieves heartburn and indigestion",
-      image: "/placeholder.svg",
+      icon: <Tablets className="h-12 w-12" />,
+      color: "#F0F0F0",
       sizes: [
         { label: "12 tablets", price: 4.29 },
         { label: "24 tablets", price: 7.49 },
@@ -161,7 +174,8 @@ const OtcCatalogScreen: React.FC = () => {
       id: 12,
       name: "Electrolyte Powder Sachets",
       description: "Rehydration for active lifestyles",
-      image: "/placeholder.svg",
+      icon: <Droplets className="h-12 w-12" />,
+      color: "#F0FFFF",
       sizes: [
         { label: "5 sachets", price: 6.99 },
         { label: "10 sachets", price: 12.49 },
@@ -281,12 +295,11 @@ const OtcCatalogScreen: React.FC = () => {
             {products.map(product => (
               <Card key={product.id} className="overflow-hidden">
                 <CardContent className="p-4">
-                  <div className="aspect-video bg-accent rounded-lg mb-3 flex items-center justify-center">
-                    <img 
-                      src={product.image} 
-                      alt={product.name}
-                      className="h-24 w-auto object-contain" 
-                    />
+                  <div 
+                    className="aspect-video rounded-lg mb-3 flex items-center justify-center" 
+                    style={{ backgroundColor: product.color }}
+                  >
+                    {product.icon}
                   </div>
                   
                   <h3 className="font-semibold text-lg">{product.name}</h3>
