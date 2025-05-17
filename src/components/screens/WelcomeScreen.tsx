@@ -5,7 +5,7 @@ import WaveBackground from "@/components/WaveBackground";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Logo from "@/components/Logo";
-import { Settings } from "lucide-react";
+import { User } from "lucide-react";
 
 const WelcomeScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ const WelcomeScreen: React.FC = () => {
           onClick={() => navigate("/settings")}
           className="text-primary hover:bg-accent/30"
         >
-          <Settings className="h-6 w-6" />
+          <User className="h-6 w-6" />
         </Button>
       </div>
       
