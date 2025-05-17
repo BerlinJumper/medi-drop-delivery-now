@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useNavigate, useLocation } from "react-router-dom";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { motion } from "framer-motion";
-import { Home } from "lucide-react";
+import { Home, MapPin } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import Logo from "@/components/Logo";
 
@@ -22,9 +22,7 @@ const AddressScreen: React.FC = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Determine the previous route for the back button
-  const previousRoute = location.pathname.includes("otc-catalog") 
-    ? "/otc-catalog" 
-    : "/medication-type";
+  const previousRoute = "/medication-type";
 
   const validateAddress = (address: string) => {
     return address.length >= 10;
@@ -50,9 +48,16 @@ const AddressScreen: React.FC = () => {
 
   const handleContinue = () => {
     if (validateAddress(address)) {
-      // Determine where to navigate based on the flow
-      const nextRoute = previousRoute === "/otc-catalog" ? "/delivery" : "/insurance";
-      navigate(nextRoute);
+      // If coming from OTC selection, we're already in the non-prescription flow
+      // If location state has otc=true, go to OTC catalog next
+      const fromMedicationType = location.state?.from === 'medicationType';
+      const isOtc = location.state?.otc === true;
+      
+      if (isOtc || fromMedicationType) {
+        navigate('/otc-catalog');
+      } else {
+        navigate('/insurance');
+      }
     } else {
       setError("Please enter a valid address");
     }
@@ -95,14 +100,17 @@ const AddressScreen: React.FC = () => {
           </h1>
 
           <div className="relative mb-6">
-            <Input
-              className={`border-2 ${
-                error ? "border-red-400" : "border-accent"
-              } p-4 text-lg`}
-              placeholder="123 Main Street, City..."
-              value={address}
-              onChange={handleAddressChange}
-            />
+            <div className="relative">
+              <MapPin className="absolute top-1/2 transform -translate-y-1/2 left-3 text-gray-500" />
+              <Input
+                className={`border-2 ${
+                  error ? "border-red-400" : "border-accent"
+                } p-4 pl-10 text-lg`}
+                placeholder="123 Main Street, City..."
+                value={address}
+                onChange={handleAddressChange}
+              />
+            </div>
             
             {error && (
               <p className="text-red-500 text-sm mt-1">{error}</p>

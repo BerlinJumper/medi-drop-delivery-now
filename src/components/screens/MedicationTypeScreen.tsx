@@ -14,9 +14,10 @@ const MedicationTypeScreen: React.FC = () => {
 
   const handleSelectType = (type: 'prescription' | 'otc') => {
     if (type === 'prescription') {
-      navigate('/address');
+      navigate('/address', { state: { from: 'medicationType', otc: false } });
     } else {
-      navigate('/otc-catalog');
+      // Navigate to address screen first, then to OTC catalog
+      navigate('/address', { state: { from: 'medicationType', otc: true } });
     }
   };
 
