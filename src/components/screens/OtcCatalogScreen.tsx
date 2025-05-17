@@ -17,7 +17,7 @@ import BackButton from "@/components/BackButton";
 import Logo from "@/components/Logo";
 
 // Custom icons for items that don't have direct Lucide equivalents
-const BottleIcon = () => (
+const BottleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg
     width="24"
     height="24"
@@ -28,6 +28,7 @@ const BottleIcon = () => (
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
+    {...props}
   >
     <path d="M9 2h6v3H9z" />
     <path d="M19 6H5a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2z" />
@@ -36,7 +37,7 @@ const BottleIcon = () => (
   </svg>
 );
 
-const SprayIcon = () => (
+const SprayIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg
     width="24"
     height="24"
@@ -47,6 +48,7 @@ const SprayIcon = () => (
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
+    {...props}
   >
     <path d="M4 4h2v4H4z" />
     <path d="M8 3h4v6H8z" />
@@ -57,7 +59,7 @@ const SprayIcon = () => (
   </svg>
 );
 
-const TabletsIcon = () => (
+const TabletsIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg
     width="24"
     height="24"
@@ -68,13 +70,14 @@ const TabletsIcon = () => (
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
+    {...props}
   >
     <rect x="3" y="8" width="6" height="12" rx="3" />
     <rect x="15" y="4" width="6" height="12" rx="3" />
   </svg>
 );
 
-const VitaminIcon = () => (
+const VitaminIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg
     width="24"
     height="24"
@@ -85,6 +88,7 @@ const VitaminIcon = () => (
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
+    {...props}
   >
     <circle cx="12" cy="12" r="7" />
     <path d="M12 9v6" />
@@ -120,6 +124,7 @@ const OtcCatalogScreen: React.FC = () => {
       id: 1,
       name: "Paracetamol Tablets",
       description: "For headache, pain, and fever relief",
+      image: "/lovable-uploads/af27ec8e-689f-4990-ab5d-4e884842e363.png",
       icon: <PillIcon className="h-12 w-12" />,
       color: "#E9F7FF",
       sizes: [
@@ -375,12 +380,22 @@ const OtcCatalogScreen: React.FC = () => {
             {products.map(product => (
               <Card key={product.id} className="overflow-hidden">
                 <CardContent className="p-4">
-                  <div 
-                    className="aspect-video rounded-lg mb-3 flex items-center justify-center" 
-                    style={{ backgroundColor: product.color }}
-                  >
-                    {product.icon}
-                  </div>
+                  {product.image ? (
+                    <div className="aspect-video rounded-lg mb-3 overflow-hidden flex items-center justify-center bg-white">
+                      <img 
+                        src={product.image} 
+                        alt={product.name}
+                        className="object-contain w-full h-full max-h-36"
+                      />
+                    </div>
+                  ) : (
+                    <div 
+                      className="aspect-video rounded-lg mb-3 flex items-center justify-center" 
+                      style={{ backgroundColor: product.color }}
+                    >
+                      {product.icon}
+                    </div>
+                  )}
                   
                   <h3 className="font-semibold text-lg">{product.name}</h3>
                   <p className="text-sm text-gray-600 mb-3">{product.description}</p>
