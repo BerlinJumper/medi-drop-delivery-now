@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate } from "react-router-dom";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { motion } from "framer-motion";
-import { Info, Pills } from "lucide-react";
+import { Info, Pill } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -129,7 +128,7 @@ const MedicationsScreen: React.FC = () => {
                             htmlFor={`med-${med.id}`}
                             className="text-lg font-medium cursor-pointer flex items-center gap-2"
                           >
-                            <Pills className="h-5 w-5 text-primary" />
+                            <Pill className="h-5 w-5 text-primary" />
                             {med.name} {med.dosage}
                           </label>
                           <p className="text-sm font-medium text-gray-700 mt-1">
