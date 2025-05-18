@@ -17,7 +17,10 @@
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
     <!-- Google Maps JavaScript API -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDB23tF9Uwk3EOkmWzbu1wMUNRexZtnCXw&libraries=places"></script>
+    <script>
+      window.GOOGLE_MAPS_API_KEY = '%VITE_GOOGLE_MAPS_API_KEY%';
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=%VITE_GOOGLE_MAPS_API_KEY%&libraries=places"></script>
   </head>
 
   <body>
