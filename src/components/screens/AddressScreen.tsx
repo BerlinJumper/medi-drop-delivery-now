@@ -8,39 +8,22 @@ import { motion } from "framer-motion";
 import { Home, Loader2, MapPin } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import Logo from "@/components/Logo";
-import Autocomplete from "react-google-autocomplete";
-import { getDeliveryOptions } from "@/utils/googlePlaces";
 import { toast } from "sonner";
-import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
 
-interface AddressFormValues {
-  street: string;
-  city: string;
-  state: string;
-  zipCode: string;
-}
+const dummyAddresses = [
+  "Hauptstraße 21, 10827 Berlin",
+  "Müllerstraße 12, 13353 Berlin",
+  "Prenzlauer Allee 44, 10405 Berlin"
+];
 
 const AddressScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [address, setAddress] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedPlace, setSelectedPlace] = useState<google.maps.places.PlaceResult | null>(null);
-  const [coordinates, setCoordinates] = useState<{ lat: number; lon: number } | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [flowType, setFlowType] = useState<'prescription' | 'otc' | null>(null);
-  const [manualEntryMode, setManualEntryMode] = useState(false);
   
-  const form = useForm<AddressFormValues>({
-    defaultValues: {
-      street: "",
-      city: "",
-      state: "",
-      zipCode: ""
-    }
-  });
-
   useEffect(() => {
     // Get flow type from location state or localStorage
     const stateFlowType = location.state?.flowType;
@@ -61,118 +44,28 @@ const AddressScreen: React.FC = () => {
   // Determine the previous route for the back button
   const previousRoute = "/medication-type";
 
-  const validateAddress = (address: string) => {
-    return address.length >= 5;
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setAddress(value);
+    setShowSuggestions(value.length > 0);
   };
 
-  const validateManualForm = () => {
-    const { street, city, state, zipCode } = form.getValues();
-    return street.length >= 3 && city.length >= 2 && state.length >= 2 && zipCode.length >= 5;
+  const handleSuggestionClick = (suggestion: string) => {
+    setAddress(suggestion);
+    setShowSuggestions(false);
   };
 
-  // Get user's current location
-  const getCurrentLocation = () => {
-    if ("geolocation" in navigator) {
-      setIsLoading(true);
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          console.log("Current location coordinates:", { latitude, longitude });
-          setCoordinates({ lat: latitude, lon: longitude });
-
-          // Use Google's Geocoding service to get the address
-          try {
-            const geocoder = new google.maps.Geocoder();
-            geocoder.geocode(
-              { location: { lat: latitude, lng: longitude } },
-              (results, status) => {
-                if (status === "OK" && results?.[0]) {
-                  const formattedAddress = results[0].formatted_address;
-                  setAddress(formattedAddress);
-                  setSelectedPlace(results[0]);
-                  toast.success("Location found successfully!");
-                } else {
-                  console.error("Geocoding failed:", status);
-                  toast.error("Failed to get address for your location");
-                  setManualEntryMode(true);
-                }
-                setIsLoading(false);
-              }
-            );
-          } catch (error) {
-            console.error("Error with geocoding:", error);
-            toast.error("Failed to get address, please enter manually");
-            setManualEntryMode(true);
-            setIsLoading(false);
-          }
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          toast.error("Failed to get your location");
-          setManualEntryMode(true);
-          setIsLoading(false);
-        },
-        { enableHighAccuracy: true }
-      );
-    } else {
-      toast.error("Geolocation is not supported by your browser");
-      setManualEntryMode(true);
-    }
-  };
-
-  const handlePlaceSelected = (place: google.maps.places.PlaceResult) => {
-    console.log("Selected place:", place);
-
-    if (!place.geometry?.location) {
-      console.error("No geometry information available for the selected place");
-      toast.error("Invalid location selected");
+  const handleContinue = () => {
+    if (!address.trim()) {
+      toast.error("Please enter a delivery address");
       return;
     }
 
-    const lat = place.geometry.location.lat();
-    const lon = place.geometry.location.lng();
-    console.log("Selected place coordinates:", { lat, lon });
-
-    if (place.formatted_address) {
-      setAddress(place.formatted_address);
-      setSelectedPlace(place);
-      setCoordinates({ lat, lon });
-      setError(null);
-    } else {
-      console.error("No formatted address available");
-      toast.error("Invalid address selected");
-    }
-  };
-
-  const handleContinue = async () => {
-    if (manualEntryMode) {
-      if (!validateManualForm()) {
-        setError("Please fill out all address fields correctly");
-        return;
-      }
-      
-      // Create a formatted address from form values
-      const { street, city, state, zipCode } = form.getValues();
-      const manualAddress = `${street}, ${city}, ${state} ${zipCode}`;
-      setAddress(manualAddress);
-      
-      // Set default coordinates if needed
-      if (!coordinates) {
-        // Use a default location (you might want to adjust this)
-        setCoordinates({ lat: 40.7128, lon: -74.0060 }); // New York coordinates
-      }
-    } else if (!validateAddress(address)) {
-      setError("Please enter a valid address");
-      return;
-    }
-
-    console.log("Proceeding with address:", address);
     setIsLoading(true);
 
     try {
-      // Store address in localStorage for reference
+      // Store address in localStorage
       localStorage.setItem('deliveryAddress', address);
-      
       toast.success("Address saved successfully");
 
       // Navigate based on flow type
@@ -183,16 +76,10 @@ const AddressScreen: React.FC = () => {
       }
     } catch (error) {
       console.error("Error processing address:", error);
-      toast.error("Failed to process your address");
-      setError("Failed to process your address. Please try again.");
+      toast.error("Failed to save address");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const toggleAddressEntryMode = () => {
-    setManualEntryMode(!manualEntryMode);
-    setError(null);
   };
 
   return (
@@ -236,116 +123,40 @@ const AddressScreen: React.FC = () => {
           </p>
 
           <div className="space-y-6">
-            {!manualEntryMode ? (
-              <div className="space-y-2">
-                <div className="flex gap-2">
-                  <Autocomplete
-                    apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
-                    onPlaceSelected={handlePlaceSelected}
-                    defaultValue={address}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    placeholder="Start typing your address..."
-                    options={{
-                      types: ['address'],
-                    }}
-                  />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={getCurrentLocation}
-                    disabled={isLoading}
-                    title="Use current location"
-                  >
-                    <MapPin className="h-4 w-4" />
-                  </Button>
-                </div>
-                
-                <Button
-                  variant="link"
-                  className="text-sm px-0 h-auto"
-                  onClick={toggleAddressEntryMode}
-                >
-                  Or enter address manually
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <Form {...form}>
-                  <div className="space-y-3">
-                    <FormField
-                      control={form.control}
-                      name="street"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Street Address</FormLabel>
-                          <FormControl>
-                            <Input placeholder="123 Main St" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                      <FormField
-                        control={form.control}
-                        name="city"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>City</FormLabel>
-                            <FormControl>
-                              <Input placeholder="New York" {...field} />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="state"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>State</FormLabel>
-                            <FormControl>
-                              <Input placeholder="NY" {...field} />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    <FormField
-                      control={form.control}
-                      name="zipCode"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>ZIP Code</FormLabel>
-                          <FormControl>
-                            <Input placeholder="10001" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+            <div className="relative">
+              <div className="flex">
+                <div className="relative flex-grow">
+                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    <MapPin className="h-5 w-5" />
                   </div>
-                </Form>
-                
-                <Button
-                  variant="link"
-                  className="text-sm px-0 h-auto"
-                  onClick={toggleAddressEntryMode}
-                >
-                  Use map to enter address
-                </Button>
+                  <Input
+                    className="pl-10 border-[#e0f0ff]"
+                    placeholder="e.g. Hauptstraße 21, 10827 Berlin"
+                    value={address}
+                    onChange={handleAddressChange}
+                  />
+                </div>
               </div>
-            )}
-
-            {error && (
-              <p className="text-sm text-destructive mt-2">{error}</p>
-            )}
+              
+              {showSuggestions && (
+                <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200">
+                  {dummyAddresses.map((suggestion, index) => (
+                    <div
+                      key={index}
+                      className="px-4 py-2 hover:bg-[#e0f0ff] cursor-pointer text-sm"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                    >
+                      {suggestion}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <Button
-              className="w-full"
+              className="w-full bg-[#002b5c] hover:bg-[#003b7c]"
               onClick={handleContinue}
-              disabled={isLoading}
+              disabled={isLoading || !address.trim()}
             >
               {isLoading ? (
                 <>
