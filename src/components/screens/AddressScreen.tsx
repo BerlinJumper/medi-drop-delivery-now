@@ -240,28 +240,20 @@ const AddressScreen: React.FC = () => {
             <div className="space-y-2">
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Input
-                    type="text"
+                  <Autocomplete
+                    apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+                    className="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    onPlaceSelected={handlePlaceSelected}
+                    options={{
+                      types: ['address']
+                    }}
+                    defaultValue={address}
                     placeholder="Start typing your address..."
-                    value={address}
-                    onChange={handleAddressChange}
-                    className="w-full"
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      handleAddressChange(e);
+                      setShowSuggestions(false); // Hide dummy suggestions when using Google Autocomplete
+                    }}
                   />
-                  {showSuggestions && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
-                      {dummyAddresses
-                        .filter(addr => addr.toLowerCase().includes(address.toLowerCase()))
-                        .map((suggestion, index) => (
-                          <div
-                            key={index}
-                            className="px-4 py-2 cursor-pointer hover:bg-gray-100"
-                            onClick={() => handleSuggestionClick(suggestion)}
-                          >
-                            {suggestion}
-                          </div>
-                        ))}
-                    </div>
-                  )}
                 </div>
                 <Button
                   variant="outline"
