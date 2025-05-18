@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,15 @@ import Logo from "@/components/Logo";
 import Autocomplete from "react-google-autocomplete";
 import { getDeliveryOptions } from "@/utils/googlePlaces";
 import { toast } from "sonner";
+import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+
+interface AddressFormValues {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+}
 
 const AddressScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +30,16 @@ const AddressScreen: React.FC = () => {
   const [selectedPlace, setSelectedPlace] = useState<google.maps.places.PlaceResult | null>(null);
   const [coordinates, setCoordinates] = useState<{ lat: number; lon: number } | null>(null);
   const [flowType, setFlowType] = useState<'prescription' | 'otc' | null>(null);
+  const [manualEntryMode, setManualEntryMode] = useState(false);
+  
+  const form = useForm<AddressFormValues>({
+    defaultValues: {
+      street: "",
+      city: "",
+      state: "",
+      zipCode: ""
+    }
+  });
 
   useEffect(() => {
     // Get flow type from location state or localStorage
@@ -42,7 +62,12 @@ const AddressScreen: React.FC = () => {
   const previousRoute = "/medication-type";
 
   const validateAddress = (address: string) => {
-    return address.length >= 10;
+    return address.length >= 5;
+  };
+
+  const validateManualForm = () => {
+    const { street, city, state, zipCode } = form.getValues();
+    return street.length >= 3 && city.length >= 2 && state.length >= 2 && zipCode.length >= 5;
   };
 
   // Get user's current location
@@ -56,32 +81,42 @@ const AddressScreen: React.FC = () => {
           setCoordinates({ lat: latitude, lon: longitude });
 
           // Use Google's Geocoding service to get the address
-          const geocoder = new google.maps.Geocoder();
-          geocoder.geocode(
-            { location: { lat: latitude, lng: longitude } },
-            (results, status) => {
-              if (status === "OK" && results?.[0]) {
-                const formattedAddress = results[0].formatted_address;
-                setAddress(formattedAddress);
-                setSelectedPlace(results[0]);
-                toast.success("Location found successfully!");
-              } else {
-                console.error("Geocoding failed:", status);
-                toast.error("Failed to get address for your location");
+          try {
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode(
+              { location: { lat: latitude, lng: longitude } },
+              (results, status) => {
+                if (status === "OK" && results?.[0]) {
+                  const formattedAddress = results[0].formatted_address;
+                  setAddress(formattedAddress);
+                  setSelectedPlace(results[0]);
+                  toast.success("Location found successfully!");
+                } else {
+                  console.error("Geocoding failed:", status);
+                  toast.error("Failed to get address for your location");
+                  setManualEntryMode(true);
+                }
+                setIsLoading(false);
               }
-              setIsLoading(false);
-            }
-          );
+            );
+          } catch (error) {
+            console.error("Error with geocoding:", error);
+            toast.error("Failed to get address, please enter manually");
+            setManualEntryMode(true);
+            setIsLoading(false);
+          }
         },
         (error) => {
           console.error("Error getting location:", error);
           toast.error("Failed to get your location");
+          setManualEntryMode(true);
           setIsLoading(false);
         },
         { enableHighAccuracy: true }
       );
     } else {
       toast.error("Geolocation is not supported by your browser");
+      setManualEntryMode(true);
     }
   };
 
@@ -110,45 +145,54 @@ const AddressScreen: React.FC = () => {
   };
 
   const handleContinue = async () => {
-    if (!validateAddress(address)) {
+    if (manualEntryMode) {
+      if (!validateManualForm()) {
+        setError("Please fill out all address fields correctly");
+        return;
+      }
+      
+      // Create a formatted address from form values
+      const { street, city, state, zipCode } = form.getValues();
+      const manualAddress = `${street}, ${city}, ${state} ${zipCode}`;
+      setAddress(manualAddress);
+      
+      // Set default coordinates if needed
+      if (!coordinates) {
+        // Use a default location (you might want to adjust this)
+        setCoordinates({ lat: 40.7128, lon: -74.0060 }); // New York coordinates
+      }
+    } else if (!validateAddress(address)) {
       setError("Please enter a valid address");
       return;
     }
 
-    if (!coordinates) {
-      setError("Location coordinates are required");
-      return;
-    }
-
-    console.log("Making API call with coordinates:", coordinates);
+    console.log("Proceeding with address:", address);
     setIsLoading(true);
 
     try {
-      const deliveryOptions = await getDeliveryOptions(coordinates.lat, coordinates.lon);
-      console.log("Delivery options response:", deliveryOptions);
+      // Store address in localStorage for reference
+      localStorage.setItem('deliveryAddress', address);
+      
+      toast.success("Address saved successfully");
 
-      if (deliveryOptions) {
-        // Store address in localStorage for reference
-        localStorage.setItem('deliveryAddress', address);
-
-        toast.success("Location verified successfully");
-
-        // Navigate based on flow type
-        if (flowType === 'otc') {
-          navigate('/otc-catalog', { state: { from: 'address', flowType: 'otc' } });
-        } else {
-          navigate('/insurance', { state: { from: 'address', flowType: 'prescription' } });
-        }
+      // Navigate based on flow type
+      if (flowType === 'otc') {
+        navigate('/otc-catalog', { state: { from: 'address', flowType: 'otc' } });
       } else {
-        throw new Error("No delivery options returned");
+        navigate('/insurance', { state: { from: 'address', flowType: 'prescription' } });
       }
     } catch (error) {
-      console.error("Error getting delivery options:", error);
-      toast.error("Failed to verify delivery location");
-      setError("Failed to verify delivery location. Please try again.");
+      console.error("Error processing address:", error);
+      toast.error("Failed to process your address");
+      setError("Failed to process your address. Please try again.");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const toggleAddressEntryMode = () => {
+    setManualEntryMode(!manualEntryMode);
+    setError(null);
   };
 
   return (
@@ -192,47 +236,121 @@ const AddressScreen: React.FC = () => {
           </p>
 
           <div className="space-y-6">
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <Autocomplete
-                  apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
-                  onPlaceSelected={handlePlaceSelected}
-                  defaultValue={address}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="Start typing your address..."
-                  options={{
-                    types: ['address'],
-                  }}
-                />
+            {!manualEntryMode ? (
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <Autocomplete
+                    apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+                    onPlaceSelected={handlePlaceSelected}
+                    defaultValue={address}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder="Start typing your address..."
+                    options={{
+                      types: ['address'],
+                    }}
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={getCurrentLocation}
+                    disabled={isLoading}
+                    title="Use current location"
+                  >
+                    <MapPin className="h-4 w-4" />
+                  </Button>
+                </div>
+                
                 <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={getCurrentLocation}
-                  disabled={isLoading}
-                  title="Use current location"
+                  variant="link"
+                  className="text-sm px-0 h-auto"
+                  onClick={toggleAddressEntryMode}
                 >
-                  <MapPin className="h-4 w-4" />
+                  Or enter address manually
                 </Button>
               </div>
-              {error && (
-                <p className="text-sm text-destructive mt-2">{error}</p>
-              )}
-              {coordinates && (
-                <p className="text-sm text-muted-foreground">
-                  Location: {coordinates.lat.toFixed(6)}, {coordinates.lon.toFixed(6)}
-                </p>
-              )}
-            </div>
+            ) : (
+              <div className="space-y-4">
+                <Form {...form}>
+                  <div className="space-y-3">
+                    <FormField
+                      control={form.control}
+                      name="street"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Street Address</FormLabel>
+                          <FormControl>
+                            <Input placeholder="123 Main St" {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormField
+                        control={form.control}
+                        name="city"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>City</FormLabel>
+                            <FormControl>
+                              <Input placeholder="New York" {...field} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="state"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>State</FormLabel>
+                            <FormControl>
+                              <Input placeholder="NY" {...field} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name="zipCode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>ZIP Code</FormLabel>
+                          <FormControl>
+                            <Input placeholder="10001" {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </Form>
+                
+                <Button
+                  variant="link"
+                  className="text-sm px-0 h-auto"
+                  onClick={toggleAddressEntryMode}
+                >
+                  Use map to enter address
+                </Button>
+              </div>
+            )}
+
+            {error && (
+              <p className="text-sm text-destructive mt-2">{error}</p>
+            )}
 
             <Button
               className="w-full"
               onClick={handleContinue}
-              disabled={!validateAddress(address) || isLoading}
+              disabled={isLoading}
             >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Verifying...
+                  Processing...
                 </>
               ) : (
                 'Continue'
