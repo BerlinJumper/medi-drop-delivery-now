@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,7 +67,9 @@ const AddressScreen: React.FC = () => {
     try {
       // Store address in localStorage
       localStorage.setItem('deliveryAddress', address);
-      toast.success("Address saved successfully");
+      toast.success("Address saved successfully", {
+        duration: 2000 // Display for 2 seconds only
+      });
 
       // Navigate based on flow type
       if (flowType === 'otc') {

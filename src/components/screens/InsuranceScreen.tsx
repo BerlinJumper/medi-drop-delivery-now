@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,7 +57,9 @@ const InsuranceScreen: React.FC = () => {
     // Always succeed verification after 1.5 seconds
     setTimeout(() => {
       setVerificationStatus("success");
-      toast.success("Insurance verified successfully");
+      toast.success("Insurance verified successfully", {
+        duration: 2000 // Display for 2 seconds only
+      });
       localStorage.setItem('insuranceVerified', 'true');
     }, 1500);
   };
