@@ -41,18 +41,24 @@ const SummaryScreen: React.FC = () => {
     price: "€2.99",
     estimate: "12 minutes"
   });
+  const [userAddress, setUserAddress] = useState<string>(""); 
 
   useEffect(() => {
     // Get delivery method from localStorage
     const method = localStorage.getItem('selectedDeliveryMethod') || 'drone';
     const price = localStorage.getItem('deliveryPrice') || '€2.99';
     const time = localStorage.getItem('deliveryTime') || '12 minutes';
+    const address = localStorage.getItem('deliveryAddress');
     
     setDeliveryDetails({
       method,
       price,
       estimate: time
     });
+    
+    if (address) {
+      setUserAddress(address);
+    }
   }, []);
 
   const handleEdit = (section: string) => {
@@ -82,16 +88,30 @@ const SummaryScreen: React.FC = () => {
 
   const totalOrderPrice = "€29.99"; // Example total price
 
+  // Format the address for display
+  const formatAddress = () => {
+    if (!userAddress) return "Parkstraße 8, 01968 Senftenberg";
+    
+    // Split the address by comma if it contains one
+    const parts = userAddress.split(',');
+    if (parts.length > 1) {
+      return (
+        <>
+          <p className="text-gray-700">{parts[0].trim()}</p>
+          <p className="text-gray-700">{parts.slice(1).join(',').trim()}</p>
+        </>
+      );
+    }
+    
+    return <p className="text-gray-700">{userAddress}</p>;
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center px-4 pt-10 pb-20 relative">
       {!orderPlaced && <BackButton previousRoute="/delivery" />}
       
       <div className="flex justify-center mb-6">
-        <img 
-          src="/lovable-uploads/aa39a6da-764d-4f5e-a772-36f65f038f51.png" 
-          alt="Medifly Logo" 
-          className="h-16 w-auto" 
-        />
+        <Logo size="small" />
       </div>
       
       {!orderPlaced ? (
@@ -124,8 +144,7 @@ const SummaryScreen: React.FC = () => {
                     Edit
                   </Button>
                 </div>
-                <p className="text-gray-700">123 Main Street</p>
-                <p className="text-gray-700">New York, NY 10001</p>
+                {formatAddress()}
               </CardContent>
             </Card>
 

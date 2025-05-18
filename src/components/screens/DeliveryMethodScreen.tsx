@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,7 @@ import { Car, Home } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import BackButton from "@/components/BackButton";
 import Logo from "@/components/Logo";
+import { toast } from "sonner";
 
 type DeliveryMethod = "car" | "drone" | null;
 
@@ -59,7 +60,20 @@ const DeliveryMethodScreen: React.FC = () => {
   const navigate = useNavigate();
   // Default to drone delivery
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("drone");
+  const [userAddress, setUserAddress] = useState<string>(""); 
   
+  useEffect(() => {
+    // Retrieve the address from localStorage
+    const address = localStorage.getItem('deliveryAddress');
+    if (address) {
+      setUserAddress(address);
+    } else {
+      // If no address is found, show an error and redirect
+      toast.error("Please enter a delivery address first");
+      navigate('/address');
+    }
+  }, [navigate]);
+
   const deliveryOptions: DeliveryOption[] = [
     {
       id: "drone",
@@ -100,7 +114,9 @@ const DeliveryMethodScreen: React.FC = () => {
     }
   };
 
-  const userAddress = "123 Main Street, New York, NY 10001";
+  const handleChangeAddress = () => {
+    navigate("/address");
+  };
 
   return (
     <motion.div
@@ -123,11 +139,7 @@ const DeliveryMethodScreen: React.FC = () => {
       </div>
       
       <div className="flex justify-center mb-6">
-        <img 
-          src="/lovable-uploads/aa39a6da-764d-4f5e-a772-36f65f038f51.png" 
-          alt="Medifly Logo" 
-          className="h-16 w-auto" 
-        />
+        <Logo size="small" />
       </div>
       
       <ProgressIndicator currentStep={4} totalSteps={4} />
@@ -144,11 +156,11 @@ const DeliveryMethodScreen: React.FC = () => {
           
           <div className="bg-gray-50 rounded-lg p-4 mb-6">
             <h2 className="font-medium text-gray-600 mb-1">Deliver to:</h2>
-            <p className="text-gray-900">{userAddress}</p>
+            <p className="text-gray-900 font-medium">{userAddress || "Parkstraße 8, 01968 Senftenberg"}</p>
             <Button 
               variant="link" 
               className="text-sm p-0 h-auto mt-1" 
-              onClick={() => navigate("/address")}
+              onClick={handleChangeAddress}
             >
               Change address
             </Button>
