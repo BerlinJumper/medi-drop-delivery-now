@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +10,7 @@ import Logo from "@/components/Logo";
 import { toast } from "sonner";
 
 const dummyAddresses = [
+  "Parkstraße 8, 01968 Senftenberg",
   "Hauptstraße 21, 10827 Berlin",
   "Müllerstraße 12, 13353 Berlin",
   "Prenzlauer Allee 44, 10405 Berlin"
