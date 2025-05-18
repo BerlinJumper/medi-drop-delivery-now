@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,8 +7,11 @@ import { motion } from "framer-motion";
 import { Home, Loader2, MapPin } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import Logo from "@/components/Logo";
+import Autocomplete from "react-google-autocomplete";
+import { getDeliveryOptions } from "@/utils/googlePlaces";
 import { toast } from "sonner";
 
+// Dummy addresses for suggestions (can be replaced with API data)
 const dummyAddresses = [
   "Parkstraße 8, 01968 Senftenberg",
   "Hauptstraße 21, 10827 Berlin",
@@ -21,55 +23,162 @@ const AddressScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [address, setAddress] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedPlace, setSelectedPlace] = useState<google.maps.places.PlaceResult | null>(null);
+  const [coordinates, setCoordinates] = useState<{ lat: number; lon: number } | null>(null);
   const [flowType, setFlowType] = useState<'prescription' | 'otc' | null>(null);
-  
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
   useEffect(() => {
     // Get flow type from location state or localStorage
     const stateFlowType = location.state?.flowType;
     const storedFlowType = localStorage.getItem('medicationFlow');
-
-    // Set flow type from state or localStorage
     const currentFlowType = stateFlowType || storedFlowType;
 
     if (currentFlowType === 'prescription' || currentFlowType === 'otc') {
       setFlowType(currentFlowType);
+      // Pre-fill address if it exists in localStorage
+      const savedAddress = localStorage.getItem('deliveryAddress');
+      if (savedAddress) {
+        setAddress(savedAddress);
+      }
     } else {
-      // If no flow type is found, redirect to medication type screen
       toast.error("Please select a medication type first");
       navigate('/medication-type');
     }
   }, [location, navigate]);
 
-  // Determine the previous route for the back button
   const previousRoute = "/medication-type";
+
+  const validateAddress = (address: string) => {
+    return address.length >= 10;
+  };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setAddress(value);
     setShowSuggestions(value.length > 0);
+    setError(null);
   };
 
   const handleSuggestionClick = (suggestion: string) => {
     setAddress(suggestion);
     setShowSuggestions(false);
+    setError(null);
   };
 
-  const handleContinue = () => {
-    if (!address.trim()) {
-      toast.error("Please enter a delivery address");
+  const getCurrentLocation = () => {
+    if (!("geolocation" in navigator)) {
+      toast.error("Geolocation is not supported by your browser");
       return;
     }
 
     setIsLoading(true);
+    const timeoutId = setTimeout(() => {
+      setIsLoading(false);
+      toast.error("Location request timed out. Please try again.");
+    }, 10000);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        clearTimeout(timeoutId);
+        const { latitude, longitude } = position.coords;
+        setCoordinates({ lat: latitude, lon: longitude });
+
+        try {
+          const geocoder = new google.maps.Geocoder();
+          const results = await new Promise<any[]>((resolve, reject) => {
+            geocoder.geocode(
+              { location: { lat: latitude, lng: longitude } },
+              (results, status) => {
+                if (status === "OK" && results) {
+                  resolve(results);
+                } else {
+                  reject(new Error(status));
+                }
+              }
+            );
+          });
+
+          if (results[0]) {
+            const formattedAddress = results[0].formatted_address;
+            setAddress(formattedAddress);
+            setSelectedPlace(results[0]);
+            setError(null);
+            toast.success("Location found successfully!");
+          }
+        } catch (error) {
+          console.error("Geocoding failed:", error);
+          toast.error("Failed to get address for your location");
+        } finally {
+          setIsLoading(false);
+        }
+      },
+      (error) => {
+        clearTimeout(timeoutId);
+        console.error("Error getting location:", error);
+        toast.error("Failed to get your location");
+        setIsLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  const handlePlaceSelected = (place: google.maps.places.PlaceResult) => {
+    if (!place.geometry?.location) {
+      toast.error("Invalid location selected");
+      return;
+    }
+
+    const lat = place.geometry.location.lat();
+    const lon = place.geometry.location.lng();
+
+    if (place.formatted_address) {
+      setAddress(place.formatted_address);
+      setSelectedPlace(place);
+      setCoordinates({ lat, lon });
+      setError(null);
+    } else {
+      toast.error("Invalid address selected");
+    }
+  };
+
+  const handleContinue = async () => {
+    if (!validateAddress(address)) {
+      setError("Please enter a valid address");
+      return;
+    }
+
+    setIsLoading(true);
+    const toastId = toast.loading("Verifying your location...");
 
     try {
-      // Store address in localStorage
+      // Store address immediately
       localStorage.setItem('deliveryAddress', address);
-      toast.success("Address saved successfully", {
-        duration: 2000 // Display for 2 seconds only
-      });
+
+      if (coordinates) {
+        // If we have coordinates, verify with API
+        const deliveryOptionsPromise = getDeliveryOptions(coordinates.lat, coordinates.lon);
+
+        // Set a timeout for the API call
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Request timeout')), 10000);
+        });
+
+        // Race between the API call and timeout
+        const deliveryOptions = await Promise.race([
+          deliveryOptionsPromise,
+          timeoutPromise
+        ]);
+
+        if (!deliveryOptions) {
+          throw new Error("No delivery options returned");
+        }
+      }
+
+      toast.dismiss(toastId);
+      toast.success("Location verified successfully");
 
       // Navigate based on flow type
       if (flowType === 'otc') {
@@ -79,7 +188,9 @@ const AddressScreen: React.FC = () => {
       }
     } catch (error) {
       console.error("Error processing address:", error);
-      toast.error("Failed to save address");
+      toast.dismiss(toastId);
+      toast.error("Failed to verify delivery location");
+      setError("Failed to verify delivery location. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -126,45 +237,61 @@ const AddressScreen: React.FC = () => {
           </p>
 
           <div className="space-y-6">
-            <div className="relative">
-              <div className="flex">
-                <div className="relative flex-grow">
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                    <MapPin className="h-5 w-5" />
-                  </div>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
                   <Input
-                    className="pl-10 border-[#e0f0ff]"
-                    placeholder="e.g. Hauptstraße 21, 10827 Berlin"
+                    type="text"
+                    placeholder="Start typing your address..."
                     value={address}
                     onChange={handleAddressChange}
+                    className="w-full"
                   />
-                </div>
-              </div>
-              
-              {showSuggestions && (
-                <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200">
-                  {dummyAddresses.map((suggestion, index) => (
-                    <div
-                      key={index}
-                      className="px-4 py-2 hover:bg-[#e0f0ff] cursor-pointer text-sm"
-                      onClick={() => handleSuggestionClick(suggestion)}
-                    >
-                      {suggestion}
+                  {showSuggestions && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
+                      {dummyAddresses
+                        .filter(addr => addr.toLowerCase().includes(address.toLowerCase()))
+                        .map((suggestion, index) => (
+                          <div
+                            key={index}
+                            className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                            onClick={() => handleSuggestionClick(suggestion)}
+                          >
+                            {suggestion}
+                          </div>
+                        ))}
                     </div>
-                  ))}
+                  )}
                 </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={getCurrentLocation}
+                  disabled={isLoading}
+                  title="Use current location"
+                >
+                  <MapPin className="h-4 w-4" />
+                </Button>
+              </div>
+              {error && (
+                <p className="text-sm text-destructive mt-2">{error}</p>
+              )}
+              {coordinates && (
+                <p className="text-sm text-muted-foreground">
+                  Location: {coordinates.lat.toFixed(6)}, {coordinates.lon.toFixed(6)}
+                </p>
               )}
             </div>
 
             <Button
-              className="w-full bg-[#002b5c] hover:bg-[#003b7c]"
+              className="w-full"
               onClick={handleContinue}
-              disabled={isLoading || !address.trim()}
+              disabled={!validateAddress(address) || isLoading}
             >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing...
+                  Verifying...
                 </>
               ) : (
                 'Continue'
