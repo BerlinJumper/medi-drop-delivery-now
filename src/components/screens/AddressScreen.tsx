@@ -25,78 +25,92 @@ const AddressScreen: React.FC = () => {
     // Get flow type from location state or localStorage
     const stateFlowType = location.state?.flowType;
     const storedFlowType = localStorage.getItem('medicationFlow');
-
-    // Set flow type from state or localStorage
     const currentFlowType = stateFlowType || storedFlowType;
 
     if (currentFlowType === 'prescription' || currentFlowType === 'otc') {
       setFlowType(currentFlowType);
+      // Pre-fill address if it exists in localStorage
+      const savedAddress = localStorage.getItem('deliveryAddress');
+      if (savedAddress) {
+        setAddress(savedAddress);
+      }
     } else {
-      // If no flow type is found, redirect to medication type screen
       toast.error("Please select a medication type first");
       navigate('/medication-type');
     }
   }, [location, navigate]);
 
-  // Determine the previous route for the back button
   const previousRoute = "/medication-type";
 
   const validateAddress = (address: string) => {
     return address.length >= 10;
   };
 
-  // Get user's current location
   const getCurrentLocation = () => {
-    if ("geolocation" in navigator) {
-      setIsLoading(true);
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          console.log("Current location coordinates:", { latitude, longitude });
-          setCoordinates({ lat: latitude, lon: longitude });
-
-          // Use Google's Geocoding service to get the address
-          const geocoder = new google.maps.Geocoder();
-          geocoder.geocode(
-            { location: { lat: latitude, lng: longitude } },
-            (results, status) => {
-              if (status === "OK" && results?.[0]) {
-                const formattedAddress = results[0].formatted_address;
-                setAddress(formattedAddress);
-                setSelectedPlace(results[0]);
-                toast.success("Location found successfully!");
-              } else {
-                console.error("Geocoding failed:", status);
-                toast.error("Failed to get address for your location");
-              }
-              setIsLoading(false);
-            }
-          );
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          toast.error("Failed to get your location");
-          setIsLoading(false);
-        },
-        { enableHighAccuracy: true }
-      );
-    } else {
+    if (!("geolocation" in navigator)) {
       toast.error("Geolocation is not supported by your browser");
+      return;
     }
+
+    setIsLoading(true);
+    const timeoutId = setTimeout(() => {
+      setIsLoading(false);
+      toast.error("Location request timed out. Please try again.");
+    }, 10000);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        clearTimeout(timeoutId);
+        const { latitude, longitude } = position.coords;
+        setCoordinates({ lat: latitude, lon: longitude });
+
+        try {
+          const geocoder = new google.maps.Geocoder();
+          const results = await new Promise<any[]>((resolve, reject) => {
+            geocoder.geocode(
+              { location: { lat: latitude, lng: longitude } },
+              (results, status) => {
+                if (status === "OK" && results) {
+                  resolve(results);
+                } else {
+                  reject(new Error(status));
+                }
+              }
+            );
+          });
+
+          if (results[0]) {
+            const formattedAddress = results[0].formatted_address;
+            setAddress(formattedAddress);
+            setSelectedPlace(results[0]);
+            setError(null);
+            toast.success("Location found successfully!");
+          }
+        } catch (error) {
+          console.error("Geocoding failed:", error);
+          toast.error("Failed to get address for your location");
+        } finally {
+          setIsLoading(false);
+        }
+      },
+      (error) => {
+        clearTimeout(timeoutId);
+        console.error("Error getting location:", error);
+        toast.error("Failed to get your location");
+        setIsLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   };
 
   const handlePlaceSelected = (place: google.maps.places.PlaceResult) => {
-    console.log("Selected place:", place);
-
     if (!place.geometry?.location) {
-      console.error("No geometry information available for the selected place");
       toast.error("Invalid location selected");
       return;
     }
 
     const lat = place.geometry.location.lat();
     const lon = place.geometry.location.lng();
-    console.log("Selected place coordinates:", { lat, lon });
 
     if (place.formatted_address) {
       setAddress(place.formatted_address);
@@ -104,7 +118,6 @@ const AddressScreen: React.FC = () => {
       setCoordinates({ lat, lon });
       setError(null);
     } else {
-      console.error("No formatted address available");
       toast.error("Invalid address selected");
     }
   };
@@ -120,17 +133,29 @@ const AddressScreen: React.FC = () => {
       return;
     }
 
-    console.log("Making API call with coordinates:", coordinates);
     setIsLoading(true);
+    const toastId = toast.loading("Verifying your location...");
 
     try {
-      const deliveryOptions = await getDeliveryOptions(coordinates.lat, coordinates.lon);
-      console.log("Delivery options response:", deliveryOptions);
+      // Store address immediately
+      localStorage.setItem('deliveryAddress', address);
+
+      // Start API call
+      const deliveryOptionsPromise = getDeliveryOptions(coordinates.lat, coordinates.lon);
+
+      // Set a timeout for the API call
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 10000);
+      });
+
+      // Race between the API call and timeout
+      const deliveryOptions = await Promise.race([
+        deliveryOptionsPromise,
+        timeoutPromise
+      ]);
 
       if (deliveryOptions) {
-        // Store address in localStorage for reference
-        localStorage.setItem('deliveryAddress', address);
-
+        toast.dismiss(toastId);
         toast.success("Location verified successfully");
 
         // Navigate based on flow type
@@ -144,6 +169,7 @@ const AddressScreen: React.FC = () => {
       }
     } catch (error) {
       console.error("Error getting delivery options:", error);
+      toast.dismiss(toastId);
       toast.error("Failed to verify delivery location");
       setError("Failed to verify delivery location. Please try again.");
     } finally {
