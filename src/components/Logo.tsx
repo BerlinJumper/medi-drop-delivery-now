@@ -14,9 +14,9 @@ const Logo: React.FC<LogoProps> = ({ size = "medium" }) => {
   };
 
   const dimensions = {
-    small: "h-10",
-    medium: "h-16",
-    large: "h-24",
+    small: "h-16",
+    medium: "h-24",
+    large: "h-32",
   };
 
   return (
