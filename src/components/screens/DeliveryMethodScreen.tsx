@@ -1,13 +1,15 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { motion } from "framer-motion";
 import { Car, Home } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import BackButton from "@/components/BackButton";
 import Logo from "@/components/Logo";
+import { toast } from "sonner";
 
 type DeliveryMethod = "car" | "drone" | null;
 
@@ -18,21 +20,21 @@ interface DeliveryOption {
   description: string;
   price: string;
   distance: string;
-  note?: string;
+  tag?: string;
   icon: React.ReactNode;
 }
 
 const DroneIcon = () => (
   <svg
-    width="16"
-    height="16"
+    width="24"
+    height="24"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className="h-16 w-16 text-primary mb-2"
+    className="h-8 w-8 text-primary"
   >
     {/* Drone Body */}
     <rect x="9" y="10" width="6" height="4" rx="1" />
@@ -56,27 +58,42 @@ const DroneIcon = () => (
 
 const DeliveryMethodScreen: React.FC = () => {
   const navigate = useNavigate();
-  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>(null);
+  // Default to drone delivery
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("drone");
+  const [userAddress, setUserAddress] = useState<string>(""); 
   
+  useEffect(() => {
+    // Retrieve the address from localStorage
+    const address = localStorage.getItem('deliveryAddress');
+    if (address) {
+      setUserAddress(address);
+    } else {
+      // If no address is found, show an error and redirect
+      toast.error("Please enter a delivery address first");
+      navigate('/address');
+    }
+  }, [navigate]);
+
   const deliveryOptions: DeliveryOption[] = [
-    {
-      id: "car",
-      name: "Car Delivery",
-      timeEstimate: "2–4 hours",
-      description: "Standard courier delivery to your door.",
-      price: "$3.99",
-      distance: "Within 10 miles",
-      icon: <Car className="h-16 w-16 text-primary mb-2" />
-    },
     {
       id: "drone",
       name: "Drone Delivery",
-      timeEstimate: "Within 1 hour",
+      timeEstimate: "12 minutes",
       description: "Fast, eco-friendly drone drop-off.",
-      price: "$9.99",
-      distance: "Within 2 miles",
-      note: "Drone delivery may not be available in all locations.",
+      price: "€2.99",
+      distance: "1.2 km",
+      tag: "Fastest Option",
       icon: <DroneIcon />
+    },
+    {
+      id: "car",
+      name: "Car Delivery",
+      timeEstimate: "28 minutes", 
+      description: "Standard courier delivery to your door.",
+      price: "€5.99",
+      distance: "4.8 km",
+      tag: "Standard Option",
+      icon: <Car className="h-8 w-8 text-primary" />
     }
   ];
 
@@ -86,11 +103,20 @@ const DeliveryMethodScreen: React.FC = () => {
 
   const handleContinue = () => {
     if (deliveryMethod) {
+      // Store selected method for summary screen
+      localStorage.setItem('selectedDeliveryMethod', deliveryMethod);
+      localStorage.setItem('deliveryPrice', 
+        deliveryMethod === 'drone' ? '€2.99' : '€5.99');
+      localStorage.setItem('deliveryTime', 
+        deliveryMethod === 'drone' ? '12 minutes' : '28 minutes');
+      
       navigate("/summary");
     }
   };
 
-  const userAddress = "123 Main Street, New York, NY 10001";
+  const handleChangeAddress = () => {
+    navigate("/address");
+  };
 
   return (
     <motion.div
@@ -130,41 +156,59 @@ const DeliveryMethodScreen: React.FC = () => {
           
           <div className="bg-gray-50 rounded-lg p-4 mb-6">
             <h2 className="font-medium text-gray-600 mb-1">Deliver to:</h2>
-            <p className="text-gray-900">{userAddress}</p>
+            <p className="text-gray-900 font-medium">{userAddress || "Parkstraße 8, 01968 Senftenberg"}</p>
             <Button 
               variant="link" 
               className="text-sm p-0 h-auto mt-1" 
-              onClick={() => navigate("/address")}
+              onClick={handleChangeAddress}
             >
               Change address
             </Button>
           </div>
 
-          <div className="space-y-6 mb-6">
+          <div className="space-y-4 mb-6">
             {deliveryOptions.map(option => (
               <Card
                 key={option.id}
-                className={`hover:shadow-md cursor-pointer transition-all ${
+                className={`hover:shadow-md cursor-pointer transition-all bg-accent ${
                   deliveryMethod === option.id ? "border-primary border-2" : ""
                 }`}
                 onClick={() => handleSelectMethod(option.id)}
               >
-                <CardContent className="p-6 flex flex-col items-center">
-                  {option.icon}
-                  <div className="flex items-center justify-between w-full mb-1">
-                    <h3 className="text-xl font-semibold">{option.name}</h3>
-                    <span className="text-lg font-bold text-primary">{option.price}</span>
+                <CardContent className="p-4">
+                  <div className="flex items-start">
+                    <div className="mr-3 pt-1">{option.icon}</div>
+                    <div className="flex-grow">
+                      <div className="flex items-start justify-between mb-1">
+                        <div>
+                          <div className="flex items-center">
+                            <h3 className="text-lg font-semibold">{option.name}</h3>
+                            {option.tag && (
+                              <Badge 
+                                variant={option.id === "drone" ? "default" : "secondary"} 
+                                className="ml-2 bg-accent text-primary border border-primary"
+                              >
+                                {option.tag}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-600">{option.description}</p>
+                        </div>
+                        <span className="text-lg font-bold text-primary">{option.price}</span>
+                      </div>
+                      
+                      <div className="flex justify-between mt-3">
+                        <div className="flex flex-col">
+                          <span className="text-xs text-gray-500">Delivery Time</span>
+                          <span className="font-medium">{option.timeEstimate}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs text-gray-500">Distance</span>
+                          <span className="font-medium">{option.distance}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-lg font-medium">{option.timeEstimate}</p>
-                  <p className="text-blue-600 font-medium">{option.distance}</p>
-                  <p className="text-gray-600 text-center mt-2">
-                    {option.description}
-                  </p>
-                  {option.note && (
-                    <p className="text-xs text-gray-500 mt-2 text-center">
-                      {option.note}
-                    </p>
-                  )}
                 </CardContent>
               </Card>
             ))}
@@ -175,7 +219,7 @@ const DeliveryMethodScreen: React.FC = () => {
             onClick={handleContinue}
             disabled={!deliveryMethod}
           >
-            Review & Confirm
+            Continue to Review
           </Button>
         </motion.div>
       </div>

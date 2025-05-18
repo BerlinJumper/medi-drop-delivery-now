@@ -14,9 +14,9 @@ const Logo: React.FC<LogoProps> = ({ size = "medium" }) => {
   };
 
   const dimensions = {
-    small: "h-8",
-    medium: "h-12",
-    large: "h-16",
+    small: "h-32",
+    medium: "h-48",
+    large: "h-64",
   };
 
   return (
@@ -24,33 +24,13 @@ const Logo: React.FC<LogoProps> = ({ size = "medium" }) => {
       className="flex items-center cursor-pointer" 
       onClick={handleClick}
     >
-      <div className={`text-primary ${dimensions[size]}`}>
-        <svg 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          xmlns="http://www.w3.org/2000/svg"
+      <div className={`${dimensions[size]}`}>
+        <img 
+          src="/lovable-uploads/69d379d0-04ae-49bb-995d-1ff89679bb46.png" 
+          alt="MediFly Logo" 
           className="h-full w-auto"
-        >
-          {/* Drone Body */}
-          <rect x="9" y="10" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="2" />
-          
-          {/* Camera/Sensor */}
-          <circle cx="12" cy="12" r="1" fill="currentColor" />
-          
-          {/* Arms */}
-          <line x1="4" y1="8" x2="9" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          <line x1="20" y1="8" x2="15" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          <line x1="4" y1="16" x2="9" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          <line x1="20" y1="16" x2="15" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          
-          {/* Propellers */}
-          <circle cx="4" cy="8" r="2" stroke="currentColor" strokeWidth="2" />
-          <circle cx="20" cy="8" r="2" stroke="currentColor" strokeWidth="2" />
-          <circle cx="4" cy="16" r="2" stroke="currentColor" strokeWidth="2" />
-          <circle cx="20" cy="16" r="2" stroke="currentColor" strokeWidth="2" />
-        </svg>
+        />
       </div>
-      <span className="text-primary font-bold ml-2 text-lg md:text-xl">MediFly</span>
     </div>
   );
 };

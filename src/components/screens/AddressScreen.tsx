@@ -11,6 +11,14 @@ import Autocomplete from "react-google-autocomplete";
 import { getDeliveryOptions } from "@/utils/googlePlaces";
 import { toast } from "sonner";
 
+// Dummy addresses for suggestions (can be replaced with API data)
+const dummyAddresses = [
+  "Parkstraße 8, 01968 Senftenberg",
+  "Hauptstraße 21, 10827 Berlin",
+  "Müllerstraße 12, 13353 Berlin",
+  "Prenzlauer Allee 44, 10405 Berlin"
+];
+
 const AddressScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -20,6 +28,7 @@ const AddressScreen: React.FC = () => {
   const [selectedPlace, setSelectedPlace] = useState<google.maps.places.PlaceResult | null>(null);
   const [coordinates, setCoordinates] = useState<{ lat: number; lon: number } | null>(null);
   const [flowType, setFlowType] = useState<'prescription' | 'otc' | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     // Get flow type from location state or localStorage
@@ -44,6 +53,19 @@ const AddressScreen: React.FC = () => {
 
   const validateAddress = (address: string) => {
     return address.length >= 10;
+  };
+
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setAddress(value);
+    setShowSuggestions(value.length > 0);
+    setError(null);
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setAddress(suggestion);
+    setShowSuggestions(false);
+    setError(null);
   };
 
   const getCurrentLocation = () => {
@@ -128,11 +150,6 @@ const AddressScreen: React.FC = () => {
       return;
     }
 
-    if (!coordinates) {
-      setError("Location coordinates are required");
-      return;
-    }
-
     setIsLoading(true);
     const toastId = toast.loading("Verifying your location...");
 
@@ -140,35 +157,37 @@ const AddressScreen: React.FC = () => {
       // Store address immediately
       localStorage.setItem('deliveryAddress', address);
 
-      // Start API call
-      const deliveryOptionsPromise = getDeliveryOptions(coordinates.lat, coordinates.lon);
+      if (coordinates) {
+        // If we have coordinates, verify with API
+        const deliveryOptionsPromise = getDeliveryOptions(coordinates.lat, coordinates.lon);
 
-      // Set a timeout for the API call
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout')), 10000);
-      });
+        // Set a timeout for the API call
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Request timeout')), 10000);
+        });
 
-      // Race between the API call and timeout
-      const deliveryOptions = await Promise.race([
-        deliveryOptionsPromise,
-        timeoutPromise
-      ]);
+        // Race between the API call and timeout
+        const deliveryOptions = await Promise.race([
+          deliveryOptionsPromise,
+          timeoutPromise
+        ]);
 
-      if (deliveryOptions) {
-        toast.dismiss(toastId);
-        toast.success("Location verified successfully");
-
-        // Navigate based on flow type
-        if (flowType === 'otc') {
-          navigate('/otc-catalog', { state: { from: 'address', flowType: 'otc' } });
-        } else {
-          navigate('/insurance', { state: { from: 'address', flowType: 'prescription' } });
+        if (!deliveryOptions) {
+          throw new Error("No delivery options returned");
         }
+      }
+
+      toast.dismiss(toastId);
+      toast.success("Location verified successfully");
+
+      // Navigate based on flow type
+      if (flowType === 'otc') {
+        navigate('/otc-catalog', { state: { from: 'address', flowType: 'otc' } });
       } else {
-        throw new Error("No delivery options returned");
+        navigate('/insurance', { state: { from: 'address', flowType: 'prescription' } });
       }
     } catch (error) {
-      console.error("Error getting delivery options:", error);
+      console.error("Error processing address:", error);
       toast.dismiss(toastId);
       toast.error("Failed to verify delivery location");
       setError("Failed to verify delivery location. Please try again.");
@@ -220,16 +239,30 @@ const AddressScreen: React.FC = () => {
           <div className="space-y-6">
             <div className="space-y-2">
               <div className="flex gap-2">
-                <Autocomplete
-                  apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
-                  onPlaceSelected={handlePlaceSelected}
-                  defaultValue={address}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="Start typing your address..."
-                  options={{
-                    types: ['address'],
-                  }}
-                />
+                <div className="relative flex-1">
+                  <Input
+                    type="text"
+                    placeholder="Start typing your address..."
+                    value={address}
+                    onChange={handleAddressChange}
+                    className="w-full"
+                  />
+                  {showSuggestions && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
+                      {dummyAddresses
+                        .filter(addr => addr.toLowerCase().includes(address.toLowerCase()))
+                        .map((suggestion, index) => (
+                          <div
+                            key={index}
+                            className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                            onClick={() => handleSuggestionClick(suggestion)}
+                          >
+                            {suggestion}
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
                 <Button
                   variant="outline"
                   size="icon"
